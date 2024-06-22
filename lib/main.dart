@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/screens/home.dart';
 
-void main() {
-  runApp(const ProviderScope(child: MainApp()));
-}
+void main() => runApp(const ProviderScope(child: MainApp()));
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -14,9 +12,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: Scaffold(
-        body: HomeScreen(),
-      ),
+      home: HomeScreen()
     );
   }
 }
