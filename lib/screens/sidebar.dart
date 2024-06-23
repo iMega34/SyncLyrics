@@ -25,7 +25,7 @@ class _SidebarState extends ConsumerState<Sidebar> {
       labelType: NavigationRailLabelType.selected,
       onDestinationSelected: (int index) => setState(() {
         _selectedIdx = index;
-        Routes.changeScreen(context, _selectedIdx);
+        AppRouter.changeScreen(context, _selectedIdx);
       }),
       destinations: const [
         NavigationRailDestination(
