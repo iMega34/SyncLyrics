@@ -43,6 +43,7 @@ class AppRouter {
           body: Row(
             children: [
               const Sidebar(),
+              const VerticalDivider(),
               Expanded(child: child),
             ],
           ),
