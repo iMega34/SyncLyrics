@@ -68,9 +68,12 @@ class AppRouter {
       parent: animation,
       curve: Curves.fastLinearToSlowEaseIn
     );
-    return SlideTransition(
-      position: position.animate(offsetTransition),
-      child: child,
+    return Container(
+      color: const Color.fromARGB(255, 234, 234, 234),
+      child: SlideTransition(
+        position: position.animate(offsetTransition),
+        child: child,
+      ),
     );
   }
 
