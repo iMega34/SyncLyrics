@@ -23,6 +23,7 @@ class _SidebarState extends ConsumerState<Sidebar> {
     return NavigationRail(
       selectedIndex: _selectedIdx,
       labelType: NavigationRailLabelType.selected,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       onDestinationSelected: (int index) => setState(() {
         _selectedIdx = index;
         AppRouter.changeScreen(context, _selectedIdx);
