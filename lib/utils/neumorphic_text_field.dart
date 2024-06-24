@@ -4,8 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:sync_lyrics/utils/custom_themes.dart';
 
 class NeumorphicTextField extends StatelessWidget {
+  /// Text field that implements neumorphic design
+  /// 
+  /// Parameters:
+  /// - [label] is the label for the text field
+  /// - [controller] is the controller for the text field
+  /// - [margin] is the margin for the text field
   const NeumorphicTextField({super.key, required this.label, required this.controller, this.margin});
 
+  // Class attributes
   final String label;
   final TextEditingController controller;
   final EdgeInsets? margin;

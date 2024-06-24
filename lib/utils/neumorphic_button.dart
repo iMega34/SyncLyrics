@@ -5,8 +5,15 @@ import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:sync_lyrics/utils/custom_themes.dart';
 
 class NeumorphicButton extends StatefulWidget {
+  /// Button that immplements neumorphic design
+  /// 
+  /// Parameters:
+  /// - [label] is the text to display in the button
+  /// - [onPressed] is the function to call when the button is pressed
+  /// - [margin] is the margin of the button
   const NeumorphicButton({super.key, required this.label, required this.onPressed, this.margin});
 
+  // Class attributes
   final String label;
   final VoidCallback onPressed;
   final EdgeInsets? margin;
