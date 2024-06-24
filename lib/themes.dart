@@ -17,7 +17,7 @@ class AppTheme {
       //     color: Colors.white
       //   )
       // ),
-      textTheme: GoogleFonts.tenorSansTextTheme(),
+      textTheme: GoogleFonts.nunitoSansTextTheme(),
       extensions: const [
         CustomAppTheme(
           element: Color.fromARGB(255, 234, 234, 234),
@@ -44,7 +44,7 @@ class AppTheme {
           color: Colors.white
         )
       ),
-      textTheme: GoogleFonts.tenorSansTextTheme().apply(
+      textTheme: GoogleFonts.nunitoSansTextTheme().apply(
         bodyColor: Colors.white,
         displayColor: Colors.white
       ),
