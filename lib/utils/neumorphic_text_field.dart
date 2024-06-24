@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'package:sync_lyrics/utils/custom_themes.dart';
 
-class NeumporhicTextField extends StatelessWidget {
-  const NeumporhicTextField({super.key, required this.label, this.margin});
+class NeumorphicTextField extends StatelessWidget {
+  const NeumorphicTextField({super.key, required this.label, this.margin});
 
   final String label;
   final EdgeInsets? margin;
