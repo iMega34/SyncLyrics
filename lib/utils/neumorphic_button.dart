@@ -31,38 +31,36 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
     Offset distance = isPressed ? const Offset(2, 2) : const Offset(5, 5);
     double blur = isPressed ? 5 : 15;
 
-    return Center(
-      child: Listener(
-        onPointerUp: (event) => setState(() => isPressed = false),
-        onPointerDown: (event) => setState(() {
-          isPressed = true;
-          widget.onPressed;
-        }),
-        child: AnimatedContainer(
-          margin: widget.margin,
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-          duration: const Duration(milliseconds: 40),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: appColors.externalShadow,
-                offset: distance,
-                blurRadius: blur,
-                inset: isPressed
-              ),
-              BoxShadow(
-                color: appColors.internalShadow,
-                offset: -distance,
-                blurRadius: blur,
-                inset: isPressed
-              ),
-            ]
-          ),
-          child: Text(widget.label),
+    return Listener(
+      onPointerUp: (event) => setState(() => isPressed = false),
+      onPointerDown: (event) => setState(() {
+        isPressed = true;
+        widget.onPressed;
+      }),
+      child: AnimatedContainer(
+        margin: widget.margin,
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+        duration: const Duration(milliseconds: 40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: appColors.externalShadow,
+              offset: distance,
+              blurRadius: blur,
+              inset: isPressed
+            ),
+            BoxShadow(
+              color: appColors.internalShadow,
+              offset: -distance,
+              blurRadius: blur,
+              inset: isPressed
+            ),
+          ]
         ),
+        child: Text(widget.label),
       ),
     );
   }
