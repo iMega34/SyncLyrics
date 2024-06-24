@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:sync_lyrics/utils/custom_themes.dart';
 
 class NeumorphicTextField extends StatelessWidget {
-  const NeumorphicTextField({super.key, required this.label, this.margin});
+  const NeumorphicTextField({super.key, required this.label, required this.controller, this.margin});
 
   final String label;
+  final TextEditingController controller;
   final EdgeInsets? margin;
 
   @override
@@ -33,6 +34,7 @@ class NeumorphicTextField extends StatelessWidget {
           ]
         ),
         child: TextField(
+          controller: controller,
           decoration: InputDecoration(
             labelText: label,
             floatingLabelBehavior: FloatingLabelBehavior.never,
