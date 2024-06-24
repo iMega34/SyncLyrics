@@ -5,9 +5,10 @@ import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:sync_lyrics/utils/custom_themes.dart';
 
 class NeumorphicButton extends StatefulWidget {
-  const NeumorphicButton({super.key, required this.label, this.margin});
+  const NeumorphicButton({super.key, required this.label, required this.onPressed, this.margin});
 
   final String label;
+  final VoidCallback onPressed;
   final EdgeInsets? margin;
 
   @override
@@ -26,7 +27,10 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
     return Center(
       child: Listener(
         onPointerUp: (event) => setState(() => isPressed = false),
-        onPointerDown: (event) => setState(() => isPressed = true),
+        onPointerDown: (event) => setState(() {
+          isPressed = true;
+          widget.onPressed;
+        }),
         child: AnimatedContainer(
           margin: widget.margin,
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
