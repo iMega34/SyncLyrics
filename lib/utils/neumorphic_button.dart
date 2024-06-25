@@ -33,10 +33,10 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
 
     return Listener(
       onPointerUp: (event) => setState(() => isPressed = false),
-      onPointerDown: (event) => setState(() {
-        isPressed = true;
-        widget.onPressed;
-      }),
+      onPointerDown: (event) {
+        widget.onPressed();
+        setState(() => isPressed = true);
+      },
       child: AnimatedContainer(
         margin: widget.margin,
         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
