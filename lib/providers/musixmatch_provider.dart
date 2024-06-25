@@ -98,7 +98,7 @@ class MusixmatchNotifier extends StateNotifier<MusixmatchState> {
     }
 
     // Update the state with the results from the search
-    state.copyWith(qTrack: qTrack, qArtist: qArtist, results: queryResults);
+    state = state.copyWith(qTrack: qTrack, qArtist: qArtist, results: queryResults);
   }
 }
 
