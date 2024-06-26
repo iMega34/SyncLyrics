@@ -21,7 +21,11 @@ class ResultItem extends StatelessWidget {
       child: Stack(
         children: [
           if (result["url"] == "No lyrics available")
-            Center(child: InfiniteMarqueeText(text: "No lyrics available", style: Theme.of(context).textTheme.titleLarge)),
+            Center(
+              child: InfiniteMarqueeText(
+                text: "No lyrics available",
+                style: Theme.of(context).textTheme.titleLarge)
+            ),
           SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
