@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:sync_lyrics/utils/infinite_marquee_text.dart';
 
 import 'package:sync_lyrics/utils/neumorphic.dart';
+import 'package:sync_lyrics/utils/infinite_marquee_text.dart';
 import 'package:sync_lyrics/providers/musixmatch_provider.dart';
 
 class ResultItem extends StatelessWidget {
@@ -20,33 +20,38 @@ class ResultItem extends StatelessWidget {
     return Neumorphic(
       child: Stack(
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    result["track"]!,
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      fontWeight: FontWeight.bold
+                    )
+                  ),
+                  Text(
+                    result["artist"]!,
+                    style: Theme.of(context).textTheme.bodyLarge
+                  ),
+                  Text(
+                    result["album"]!,
+                    style: Theme.of(context).textTheme.labelMedium
+                  )
+                ],
+              ),
+            ),
+          ),
           if (result["url"] == "No lyrics available")
             Center(
               child: InfiniteMarqueeText(
                 text: "No lyrics available",
-                style: Theme.of(context).textTheme.titleLarge)
+                style: Theme.of(context).textTheme.titleLarge,
+                backgroundColor: Colors.red.shade400,
+              )
             ),
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  result["track"]!,
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.bold
-                  )
-                ),
-                Text(
-                  result["artist"]!,
-                  style: Theme.of(context).textTheme.bodyLarge
-                ),
-                Text(
-                  result["album"]!,
-                  style: Theme.of(context).textTheme.labelMedium
-                )
-              ],
-            ),
-          ),
         ],
       ),
     );
