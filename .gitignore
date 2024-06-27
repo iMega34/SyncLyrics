@@ -43,3 +43,4 @@ app.*.map.json
 /android/app/release
 lib/utils/musixmatch_api_key.dart
 lib/utils/musixmatch_api_key.dart
+.syncedlyrics
