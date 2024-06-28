@@ -52,6 +52,7 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
         NeumorphicButton(
           label: "Search",
           margin: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
           onPressed: () async {
             final qTrack = _trackController.text;
             final qArtist = _artistController.text;
