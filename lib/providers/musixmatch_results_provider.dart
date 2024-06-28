@@ -10,7 +10,7 @@ import 'package:sync_lyrics/utils/musixmatch_api_key.dart';
 typedef MusixmatchResult = Map<String, String>;
 
 class MusixmatchResultsState {
-  /// State for the Musixmatch provider
+  /// State for the Musixmatch results provider
   /// 
   /// Parameters:
   /// - [results] is the list of results from the search
@@ -29,6 +29,8 @@ class MusixmatchResultsState {
 
 class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// Musixmatch provider
+  /// 
+  /// Musixmatch client to search for tracks using the Musixmatch public API
   /// 
   /// The initial state is an empty state, with no track, artist or results
   MusixmatchResultsNotifier() : super(MusixmatchResultsState());
@@ -88,6 +90,8 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
 }
 
 /// Musixmatch provider
+/// 
+/// Musixmatch client to search for tracks using the Musixmatch public API
 /// 
 /// The initial state is an empty state, with no track, artist or results
 final musixmatchResultsProvider = StateNotifierProvider<MusixmatchResultsNotifier, MusixmatchResultsState>(
