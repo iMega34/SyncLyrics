@@ -9,7 +9,12 @@ class AppTheme {
   static ThemeData lightTheme(BuildContext context) {
     return ThemeData.light().copyWith(
       scaffoldBackgroundColor: const Color.fromARGB(255, 234, 234, 234),
-      scrollbarTheme: const ScrollbarThemeData(thumbVisibility: WidgetStatePropertyAll(true)),
+      scrollbarTheme: ScrollbarThemeData(
+          thumbVisibility: WidgetStateProperty.all(false),
+          trackVisibility: WidgetStateProperty.all(false),
+          radius: const Radius.circular(0),
+          thickness: WidgetStateProperty.all(0),
+        ),
       colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 82, 176, 226)),
       // snackBarTheme: SnackBarThemeData(
       //   contentTextStyle: GoogleFonts.tenorSans().copyWith(
