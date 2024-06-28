@@ -1,7 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sync_lyrics/providers/musixmatch_provider.dart';
+
+import 'package:sync_lyrics/providers/musixmatch_results_provider.dart';
 import 'package:sync_lyrics/widgets/lyrics_generator/result_item.dart';
 
 class ResultsList extends ConsumerStatefulWidget {
@@ -15,7 +16,7 @@ class ResultsList extends ConsumerStatefulWidget {
 class _ResultsListState extends ConsumerState<ResultsList> {
   @override
   Widget build(BuildContext context) {
-    final results = ref.watch(musixmatchProvider).results;
+    final results = ref.watch(musixmatchResultsProvider).results;
 
     if (results == null) {
       return const Expanded(child: Center(child: Text("No results to display. Try looking for a song")));

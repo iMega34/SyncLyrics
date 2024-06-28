@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/utils/neumorphic_button.dart';
 import 'package:sync_lyrics/utils/neumorphic_text_field.dart';
-import 'package:sync_lyrics/providers/musixmatch_provider.dart';
+import 'package:sync_lyrics/providers/musixmatch_results_provider.dart';
 
 class SearchFields extends ConsumerStatefulWidget {
   const SearchFields({super.key});
@@ -55,7 +55,7 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
           onPressed: () async {
             final qTrack = _trackController.text;
             final qArtist = _artistController.text;
-            await ref.read(musixmatchProvider.notifier).searchTracks(qTrack, qArtist);
+            await ref.read(musixmatchResultsProvider.notifier).searchTracks(qTrack, qArtist);
           }
         )
       ],
