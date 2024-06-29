@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/routes/router.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_sidebar.dart';
 
 class Sidebar extends ConsumerStatefulWidget {
   /// Sidebar for changing screens
@@ -16,30 +17,26 @@ class Sidebar extends ConsumerStatefulWidget {
 }
 
 class _SidebarState extends ConsumerState<Sidebar> {
-  int _selectedIdx = 0;
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    return NavigationRail(
-      selectedIndex: _selectedIdx,
-      labelType: NavigationRailLabelType.selected,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      onDestinationSelected: (int index) => setState(() {
-        _selectedIdx = index;
-        AppRouter.changeScreen(context, _selectedIdx);
-      }),
+    return NeumorphicSidebar(
+      selectedIndex: _selectedIndex,
       destinations: const [
-        NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: Text("Home")
+        Destination(
+          label: Icon(Icons.home_outlined),
+          selectedLabel: Icon(Icons.home_rounded)
         ),
-        NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings_rounded),
-          label: Text("Settings")
-        ),
+        Destination(
+          label: Icon(Icons.settings_outlined),
+          selectedLabel: Icon(Icons.settings_rounded)
+        )
       ],
+      onDestinationSelected: (int index) {
+        setState(() => _selectedIndex = index);
+        AppRouter.changeScreen(context, _selectedIndex);
+      }
     );
   }
 }
