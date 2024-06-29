@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:sync_lyrics/utils/neumorphic_fade.dart';
-import 'package:sync_lyrics/utils/neumorphic_button.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_fade.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
 import 'package:sync_lyrics/utils/infinite_marquee_text.dart';
 import 'package:sync_lyrics/providers/musixmatch_results_provider.dart';
 import 'package:sync_lyrics/widgets/lyrics_finder/synced_lyrics_visualizer.dart';

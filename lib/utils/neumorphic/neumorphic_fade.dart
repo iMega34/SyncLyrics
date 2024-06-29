@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:sync_lyrics/utils/neumorphic.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic.dart';
 
 class NeumorphicFade extends StatelessWidget {
   /// Neumorphic widget with a fade effect

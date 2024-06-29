@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:sync_lyrics/utils/neumorphic_button.dart';
-import 'package:sync_lyrics/utils/neumorphic_text_field.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_text_field.dart';
 import 'package:sync_lyrics/providers/musixmatch_results_provider.dart';
 
 class SearchFields extends ConsumerStatefulWidget {
