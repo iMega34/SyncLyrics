@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sync_lyrics/screens/sidebar.dart';
 import 'package:sync_lyrics/screens/settings.dart';
-import 'package:sync_lyrics/screens/lyric_generator.dart';
+import 'package:sync_lyrics/screens/lyric_finder.dart';
 
 /// Class containing the router used by the app to navigate between screens
 /// 

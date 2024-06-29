@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 
 class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
+  /// Display the synchronized lyrics of a track
   const SyncedLyricsVisualizer({super.key, required this.artist, required this.track, required this.trackID});
 
   final String artist;
@@ -18,6 +19,7 @@ class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
 class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer> {
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final syncedLyricsStream = ref.watch(musixmatchSyncedLyricsStreamProvider(widget.trackID));
     return Container(
       alignment: Alignment.center,
@@ -27,18 +29,18 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
           padding: const EdgeInsets.all(15),
           child: Column(
             children: [
-              Text(widget.artist, style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
-              Text(widget.track, style: Theme.of(context).textTheme.bodyLarge),
+              Text(widget.artist, style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
+              Text(widget.track, style: textTheme.bodyLarge),
               const SizedBox(height: 10),
               Expanded(
                 child: syncedLyricsStream.when(
                   data: (String syncedLyrics) => SingleChildScrollView(
-                    child: Text(syncedLyrics, style: Theme.of(context).textTheme.bodyMedium),
+                    child: Text(syncedLyrics, style: textTheme.bodyMedium),
                   ),
                   error: (error, stackTrace) => Center(
                     child: Text(
                       "Error while fetching synchronized lyrics",
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)
+                      style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)
                     ),
                   ),
                   loading: () => Center(
@@ -47,7 +49,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                       children: [
                         const CircularProgressIndicator(),
                         const SizedBox(height: 10),
-                        Text("Fetching synchronized lyrics...", style: Theme.of(context).textTheme.titleMedium!)
+                        Text("Fetching synchronized lyrics...", style: textTheme.titleMedium!)
                       ],
                     )
                   )

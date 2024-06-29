@@ -7,6 +7,7 @@ import 'package:sync_lyrics/utils/neumorphic_text_field.dart';
 import 'package:sync_lyrics/providers/musixmatch_results_provider.dart';
 
 class SearchFields extends ConsumerStatefulWidget {
+  /// Search fields for the Musixmatch provider
   const SearchFields({super.key});
 
   @override
