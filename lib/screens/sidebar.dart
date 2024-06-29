@@ -1,11 +1,10 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/routes/router.dart';
 import 'package:sync_lyrics/utils/neumorphic/neumorphic_sidebar.dart';
 
-class Sidebar extends ConsumerStatefulWidget {
+class Sidebar extends StatefulWidget {
   /// Sidebar for changing screens
   /// 
   /// This widget is a navigation rail that allows the user to switch between
@@ -13,10 +12,10 @@ class Sidebar extends ConsumerStatefulWidget {
   const Sidebar({super.key});
 
   @override
-  ConsumerState<Sidebar> createState() => _SidebarState();
+  State<Sidebar> createState() => _SidebarState();
 }
 
-class _SidebarState extends ConsumerState<Sidebar> {
+class _SidebarState extends State<Sidebar> {
   int _selectedIndex = 0;
 
   @override

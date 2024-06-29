@@ -14,8 +14,8 @@ class NeumorphicTogglableButton extends StatefulWidget {
   /// - [onPressed] is the function to call when the button is pressed
   /// - [margin] is the margin of the button
   /// - [padding] is the padding of the button
-  /// - [centerContent] is whether to center the content of the button
-  /// - [enabled] is whether the button is enabled
+  /// - [centerContent] is whether to center the content of the button. Defaults to `true`
+  /// - [enabled] is whether the button is enabled. Defaults to `true`
   const NeumorphicTogglableButton({
     super.key,
     this.label,
@@ -24,8 +24,7 @@ class NeumorphicTogglableButton extends StatefulWidget {
     this.margin,
     this.padding,
     this.centerContent = true,
-    this.enabled = true,
-    this.locked = false
+    this.enabled = true
   });
 
   // Class attributes
@@ -36,7 +35,6 @@ class NeumorphicTogglableButton extends StatefulWidget {
   final EdgeInsets? padding;
   final bool centerContent;
   final bool enabled;
-  final bool locked;
 
   @override
   State<NeumorphicTogglableButton> createState() => _NeumorphicTogglableButtonState();
@@ -48,15 +46,18 @@ class _NeumorphicTogglableButtonState extends State<NeumorphicTogglableButton> {
   @override
   void didUpdateWidget(covariant NeumorphicTogglableButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!widget.locked && _isPressed) setState(() => _isPressed = false);
+    // Reset the button state if it's pressed and disabled
+    if (!widget.enabled && _isPressed) setState(() => _isPressed = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final appColors = Theme.of(context).extension<CustomAppTheme>()!;
-    Offset distance = _isPressed ? const Offset(2, 2) : const Offset(5, 5);
-    double blur = _isPressed ? 5 : 15;
+    final theme = Theme.of(context);
+    final appColors = theme.extension<CustomAppTheme>()!;
+    Offset distance = _isPressed ? const Offset(2, 2) : const Offset(3, 3);
+    double blur = _isPressed ? 5 : 10;
 
+    // Check if both label and child are provided
     if (widget.label != null && widget.child != null) {
       throw ArgumentError("Only one of 'label' or 'child' can be provided");
     }
@@ -71,23 +72,23 @@ class _NeumorphicTogglableButtonState extends State<NeumorphicTogglableButton> {
       child: AnimatedContainer(
         margin: widget.margin,
         padding: widget.padding,
-        duration: const Duration(milliseconds: 40),
+        duration: const Duration(milliseconds: 250),
         alignment: widget.centerContent ? Alignment.center : null,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
               color: appColors.externalShadow,
               offset: distance,
               blurRadius: blur,
-              inset: _isPressed
+              inset: _isPressed || !widget.enabled  // Inset shadow if the button is pressed or disabled
             ),
             BoxShadow(
               color: appColors.internalShadow,
               offset: -distance,
               blurRadius: blur,
-              inset: _isPressed
+              inset: _isPressed || !widget.enabled  // Inset shadow if the button is pressed or disabled
             ),
           ]
         ),
