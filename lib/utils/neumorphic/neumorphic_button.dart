@@ -15,6 +15,8 @@ class NeumorphicButton extends StatefulWidget {
   /// - [padding] is the padding of the button
   /// - [centerContent] is whether to center the content of the button
   /// - [enabled] is whether the button is enabled
+  /// 
+  /// Only one of 'label' or 'child' can be provided
   const NeumorphicButton({
     super.key,
     this.label,
