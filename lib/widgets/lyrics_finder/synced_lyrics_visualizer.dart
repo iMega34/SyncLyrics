@@ -8,6 +8,7 @@ class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
   /// Display the synchronized lyrics of a track
   const SyncedLyricsVisualizer({super.key, required this.artist, required this.track, required this.trackID});
 
+  // Class attributes
   final String artist;
   final String track;
   final String trackID;
