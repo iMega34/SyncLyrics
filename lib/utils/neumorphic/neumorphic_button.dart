@@ -9,8 +9,12 @@ class NeumorphicButton extends StatefulWidget {
   /// 
   /// Parameters:
   /// - [label] is the text to display in the button
+  /// - [child] is the widget to display in the button
   /// - [onPressed] is the function to call when the button is pressed
   /// - [margin] is the margin of the button
+  /// - [padding] is the padding of the button
+  /// - [centerContent] is whether to center the content of the button
+  /// - [enabled] is whether the button is enabled
   const NeumorphicButton({
     super.key,
     this.label,
