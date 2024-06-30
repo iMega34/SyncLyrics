@@ -26,7 +26,7 @@ class AppRouter {
             path: '/',
             pageBuilder: (_, state) => CustomTransitionPage(
               key: state.pageKey,
-              child: const LyricsGeneratorScreen(),
+              child: const LyricsFinderScreen(),
               transitionsBuilder: (_, animation, __, child) => _screenTransition(animation, child),
             )
           ),
