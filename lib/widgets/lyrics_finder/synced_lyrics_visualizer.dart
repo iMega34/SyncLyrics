@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:sync_lyrics/routes/router.dart';
+import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 
 class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
@@ -35,8 +37,8 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
           padding: const EdgeInsets.all(15),
           child: Column(
             children: [
-              Text(widget.artist, style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
-              Text(widget.track, style: textTheme.bodyLarge),
+              Text(widget.track, style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
+              Text(widget.artist, style: textTheme.bodyLarge),
               const SizedBox(height: 10),
               Expanded(
                 child: syncedLyricsStream.when(
@@ -60,6 +62,33 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     )
                   )
                 )
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NeumorphicButton(
+                    label: "Close",
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    onPressed: () => Navigator.pop(context)
+                  ),
+                  NeumorphicButton(
+                    label: "Edit lyrics",
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      AppRouter.changeScreen(context, 1);
+                    }
+                  ),
+                  NeumorphicButton(
+                    label: "Download LRC file",
+                    margin: const EdgeInsets.only(left: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    onPressed: () => print("LRC file downloaded")
+                  )
+                ]
               )
             ]
           )
