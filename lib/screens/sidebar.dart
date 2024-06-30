@@ -28,6 +28,10 @@ class _SidebarState extends State<Sidebar> {
           selectedLabel: Icon(Icons.home_rounded)
         ),
         Destination(
+          label: Icon(Icons.edit_note_outlined),
+          selectedLabel: Icon(Icons.edit_note_rounded)
+        ),
+        Destination(
           label: Icon(Icons.settings_outlined),
           selectedLabel: Icon(Icons.settings_rounded)
         )

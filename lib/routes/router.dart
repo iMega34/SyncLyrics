@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:sync_lyrics/screens/sidebar.dart';
 import 'package:sync_lyrics/screens/settings.dart';
-import 'package:sync_lyrics/screens/lyric_finder.dart';
+import 'package:sync_lyrics/screens/lyrics_finder.dart';
+import 'package:sync_lyrics/screens/lyrics_editor.dart';
 
 /// Class containing the router used by the app to navigate between screens
 /// 
@@ -27,6 +28,14 @@ class AppRouter {
             pageBuilder: (_, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const LyricsFinderScreen(),
+              transitionsBuilder: (_, animation, __, child) => _screenTransition(animation, child),
+            )
+          ),
+          GoRoute(
+            path: '/lyrics-editor',
+            pageBuilder: (_, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const LyricsEditorScreen(),
               transitionsBuilder: (_, animation, __, child) => _screenTransition(animation, child),
             )
           ),
@@ -89,6 +98,9 @@ class AppRouter {
         context.go('/');
         break;
       case 1:
+        context.go('/editor');
+        break;
+      case 2:
         context.go('/settings');
         break;
     }
