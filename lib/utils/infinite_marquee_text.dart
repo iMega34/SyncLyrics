@@ -15,7 +15,7 @@ class InfiniteMarqueeText extends StatefulWidget {
     this.style,
     this.backgroundColor,
     this.spacing = 10,
-    this.speed = 100
+    this.speed = 25
   });
 
   // Class attributes
