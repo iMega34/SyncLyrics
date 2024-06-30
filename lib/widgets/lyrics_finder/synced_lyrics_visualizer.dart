@@ -6,6 +6,11 @@ import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 
 class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
   /// Display the synchronized lyrics of a track
+  /// 
+  /// Parameters:
+  /// - [artist] is the artist of the track
+  /// - [track] is the title of the track
+  /// - [trackID] is the Musixmatch ID of the track
   const SyncedLyricsVisualizer({super.key, required this.artist, required this.track, required this.trackID});
 
   // Class attributes
@@ -36,7 +41,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
               Expanded(
                 child: syncedLyricsStream.when(
                   data: (String syncedLyrics) => SingleChildScrollView(
-                    child: Text(syncedLyrics, style: textTheme.bodyMedium),
+                    child: SelectableText(syncedLyrics, style: textTheme.bodyMedium),
                   ),
                   error: (error, stackTrace) => Center(
                     child: Text(
