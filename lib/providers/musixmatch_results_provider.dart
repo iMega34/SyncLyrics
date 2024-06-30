@@ -73,17 +73,17 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
     // of the URL to the lyrics in Musixmatch
     if (track["has_subtitles"] == 0) {
       return {
-        "track" : track["track_name"],
-        "artist" : track["artist_name"],
-        "album" : track["album_name"],
+        "track" : track["track_name"] ?? "Unknown",
+        "artist" : track["artist_name"] ?? "Unknown",
+        "album" : track["album_name"] ?? "Unknown",
         "track_id" : ""
       };
     }
 
     return {
-      "track" : track["track_name"],
-      "artist" : track["artist_name"],
-      "album" : track["album_name"],
+      "track" : track["track_name"] ?? "Unknown",
+      "artist" : track["artist_name"] ?? "Unknown",
+      "album" : track["album_name"] ?? "Unknown",
       "track_id" : track["track_id"].toString()
     };
   }
