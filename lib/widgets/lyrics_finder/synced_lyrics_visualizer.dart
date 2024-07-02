@@ -51,16 +51,14 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                       style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)
                     ),
                   ),
-                  loading: () => Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 10),
-                        Text("Fetching synchronized lyrics...", style: textTheme.titleMedium!)
-                      ],
-                    )
-                  )
+                  loading: () => Center(child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 10),
+                      Text("Fetching synchronized lyrics...", style: textTheme.titleMedium!)
+                    ],
+                  ))
                 )
               ),
               const SizedBox(height: 10),
@@ -86,7 +84,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     label: "Download LRC file",
                     margin: const EdgeInsets.only(left: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    onPressed: () => print("LRC file downloaded")
+                    onPressed: () {}
                   )
                 ]
               )
