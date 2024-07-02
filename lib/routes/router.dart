@@ -32,7 +32,7 @@ class AppRouter {
             )
           ),
           GoRoute(
-            path: '/lyrics-editor',
+            path: '/editor',
             pageBuilder: (_, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const LyricsEditorScreen(),
