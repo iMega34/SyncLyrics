@@ -3,6 +3,33 @@ import 'package:process_run/cmd_run.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+typedef SyncedLyrics = List<Map<String, String>>;
+
+class SyncedLyricsState {
+  const SyncedLyricsState({this.syncedLyrics});
+
+  final List<SyncedLyrics>? syncedLyrics;
+
+  SyncedLyricsState copyWith({List<SyncedLyrics>? syncedLyrics}) =>
+    SyncedLyricsState(syncedLyrics: syncedLyrics ?? this.syncedLyrics);
+}
+
+class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
+  SyncedLyricsNotifier() : super(const SyncedLyricsState());
+
+  void loadSyncedLyrics(String lyrics) {
+    final lines = List<String>.from(lyrics.split("\n"))
+      ..removeLast()..removeLast();
+    final syncedLyrics = List<SyncedLyrics>.from(
+      lines.map((String line) => {line.substring(0, 10) : line.substring(11)})
+    );
+  }
+}
+
+final syncedLyricsProvider = StateNotifierProvider<SyncedLyricsNotifier, SyncedLyricsState>(
+  (ref) => SyncedLyricsNotifier(),
+);
+
 /// Musixmatch synced lyrics stream provider
 /// 
 /// Musixmatch client to fetch synchronized lyrics for a track given its Musixmatch ID
