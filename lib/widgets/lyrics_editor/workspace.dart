@@ -6,10 +6,13 @@ import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 
 class Workspace extends ConsumerStatefulWidget {
-  /// Workspace for displaying and editing synced lyrics
+  /// Workspace for displaying and editing synced lyrics, used in the `LyricsEditorScreen`.
   /// 
   /// This widget displays the synced lyrics in a scrollable list view. Supports
-  /// editing of the lyrics and timestamps by interacting with the `WorkspaceProvider`.
+  /// editing of the lyrics and timestamps by interacting with the `workspaceProvider`.
+  /// 
+  /// For more information regarding the `workspaceProvider`, refer to the
+  /// `workspace_provider.dart` file.
   const Workspace({super.key});
 
   @override
@@ -22,6 +25,7 @@ class _TextViewerState extends ConsumerState<Workspace> {
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(syncedLyricsProvider).parsedLyrics;
 
+    // Display a message if there are no synced lyrics available from the `parsedLyricsProvider`
     if (parsedLyrics == null) {
       return Expanded(
         child: Center(child: Column(
