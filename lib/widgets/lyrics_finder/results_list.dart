@@ -33,7 +33,7 @@ class _ResultsListState extends ConsumerState<ResultsList> {
             childAspectRatio: 5 / 6
           ),
           itemCount: results.length,
-          itemBuilder: (context, index) => ResultItem(result: results[index]),
+          itemBuilder: (_, index) => ResultItem(result: results[index]),
         ),
       ),
     );
