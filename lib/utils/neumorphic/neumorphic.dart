@@ -8,17 +8,32 @@ class Neumorphic extends StatelessWidget {
   /// 
   /// Parameters:
   /// - [child] is the widget to be displayed
-  const Neumorphic({super.key, required this.child, this.color, this.borderRadius});
+  /// - [color] is the background color of the widget
+  /// - [margin] is the margin of the widget
+  /// - [padding] is the padding of the widget
+  /// - [borderRadius] is the border radius of the widget
+  const Neumorphic({
+    super.key,
+    required this.child,
+    this.color,
+    this.margin,
+    this.padding,
+    this.borderRadius
+  });
 
   // Class attributes
   final Widget child;
   final Color? color;
+  final EdgeInsets? margin;
+  final EdgeInsets? padding;
   final BorderRadius? borderRadius;
 
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<CustomAppTheme>()!;
     return Container(
+      margin: margin,
+      padding: padding,
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).scaffoldBackgroundColor,
         borderRadius: borderRadius ?? BorderRadius.circular(15),
