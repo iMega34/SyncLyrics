@@ -28,6 +28,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final notifier = ref.read(syncedLyricsProvider.notifier);
     final syncedLyricsStream = ref.watch(musixmatchSyncedLyricsStreamProvider(widget.trackID));
     return Container(
       alignment: Alignment.center,
@@ -42,9 +43,15 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
               const SizedBox(height: 10),
               Expanded(
                 child: syncedLyricsStream.when(
-                  data: (String syncedLyrics) => SingleChildScrollView(
-                    child: SelectableText(syncedLyrics, style: textTheme.bodyMedium),
-                  ),
+                  data: (String syncedLyrics) {
+                    // Load the synchronized lyrics after the frame is rendered
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => notifier.loadSyncedLyrics(widget.track, widget.artist, syncedLyrics)
+                    );
+                    return SingleChildScrollView(
+                      child: SelectableText(syncedLyrics, style: textTheme.bodyMedium),
+                    );
+                  },
                   error: (error, stackTrace) => Center(
                     child: Text(
                       "Error while fetching synchronized lyrics",
@@ -84,7 +91,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     label: "Download LRC file",
                     margin: const EdgeInsets.only(left: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    onPressed: () {}
+                    onPressed: notifier.downloadLRCFile
                   )
                 ]
               )
