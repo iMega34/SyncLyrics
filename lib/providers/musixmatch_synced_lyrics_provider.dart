@@ -13,35 +13,35 @@ class SyncedLyricsState {
   /// Parameters:
   /// - [track] is the name of the track
   /// - [artist] is the artist of the track
-  /// - [rawLyrics] are the synchronized lyrics of the track as a [String]
-  /// - [syncedLyrics] are the synchronized lyrics of the track as a [List]
+  /// - [rawSyncedLyrics] are the synchronized lyrics of the track as a [String]
+  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
   ///   of [Map]s with its timestamp and lyrics as [String]s
-  const SyncedLyricsState({this.track, this.artist, this.rawLyrics, this.syncedLyrics});
+  const SyncedLyricsState({this.track, this.artist, this.rawSyncedLyrics, this.parsedLyrics});
 
   // Class attributes
   final String? track;
   final String? artist;
-  final String? rawLyrics;
-  final List<Map<String, String>>? syncedLyrics;
+  final String? rawSyncedLyrics;
+  final List<Map<String, String>>? parsedLyrics;
 
   /// Copy the current state with new values
   ///
   /// Parameters:
   /// - [track] is the name of the track as a [String]
   /// - [artist] is the artist of the track as a [String]
-  /// - [rawLyrics] is the synchronized lyrics for the track as a [String]
-  /// - [syncedLyrics] is the synchronized lyrics for the track as a [List]
+  /// - [rawSyncedLyrics] is the synchronized lyrics for the track as a [String]
+  /// - [parsedLyrics] is the parsed synchronized lyrics for the track as a [List]
   ///  of [Map]s with its timestamp and lyrics as [String]s
   SyncedLyricsState copyWith({
     String? track,
     String? artist,
-    String? rawLyrics,
-    List<Map<String, String>>? syncedLyrics
+    String? rawSyncedLyrics,
+    List<Map<String, String>>? parsedLyrics
   }) => SyncedLyricsState(
     track: track ?? this.track,
     artist: artist ?? this.artist,
-    rawLyrics: rawLyrics ?? this.rawLyrics,
-    syncedLyrics: syncedLyrics ?? this.syncedLyrics
+    rawSyncedLyrics: rawSyncedLyrics ?? this.rawSyncedLyrics,
+    parsedLyrics: parsedLyrics ?? this.parsedLyrics
   );
 }
 
@@ -63,9 +63,9 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// Parameters:
   /// - [track] is the name of the track
   /// - [artist] is the artist of the track
-  /// - [lyrics] is the synchronized lyrics for the track as a [String]
+  /// - [lyrics] is the synchronized lyrics of the track as a [String]
   void loadSyncedLyrics(String track, String artist, String lyrics) {
-    // Splits the lyrics by line, and removes the last two lines to avoid parsing errors.
+    // Splits the lyrics by line and removes the last two lines to avoid parsing errors.
     //
     // The Musixmatch API returns the synchronized lyrics as shown below:
     //
@@ -84,12 +84,13 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     final lines = List<String>.from(lyrics.split("\n"))
       ..removeLast()..removeLast();
     // Maps the lines to a list of maps with the timestamp and lyrics
-    final syncedLyrics = List<Map<String, String>>.from(
+    final parsedLyrics = List<Map<String, String>>.from(
       lines.map((String line) => {line.substring(0, 10) : line.substring(11)})
     );
 
-    // Store the synchronized lyrics in the state
-    state = state.copyWith(track: track, artist: artist, rawLyrics: lyrics, syncedLyrics: syncedLyrics);
+    // Store the synchronized lyrics as both a [String] and a [List] of [Map]s, including
+    // the track and artist in the state 
+    state = state.copyWith(track: track, artist: artist, rawSyncedLyrics: lyrics, parsedLyrics: parsedLyrics);
   }
 
   // TODO: Implement custom default download directory in the app settings
@@ -111,10 +112,8 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
 
     // Create, write and save the LRC file in the selected directory
     final file = File("$downloadDirectory/${state.artist} - ${state.track}.lrc");
-    await file.writeAsString(state.rawLyrics!);
+    await file.writeAsString(state.rawSyncedLyrics!);
   }
-
-  
 }
 
 /// Synchronized lyrics provider
