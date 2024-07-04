@@ -37,6 +37,9 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
 
   /// Search for tracks using the Musixmatch API
   /// 
+  /// The results are stored in the state as a [List] of [Map]s with the track, artist,
+  /// album and Musixmatch track ID as [String]s
+  /// 
   /// Parameters:
   /// - [qTrack] is the track name to search for
   /// - [qArtist] is the artist name to search for
