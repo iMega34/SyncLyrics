@@ -32,7 +32,7 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// 
   /// Musixmatch client to search for tracks using the Musixmatch public API
   /// 
-  /// The initial state is an empty state, with no track, artist or results
+  /// The initial state is an empty state, with no  results
   MusixmatchResultsNotifier() : super(MusixmatchResultsState());
 
   /// Search for tracks using the Musixmatch API
@@ -93,7 +93,7 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
 /// 
 /// Musixmatch client to search for tracks using the Musixmatch public API
 /// 
-/// The initial state is an empty state, with no track, artist or results
+/// The initial state is an empty state, with no results
 final musixmatchResultsProvider = StateNotifierProvider<MusixmatchResultsNotifier, MusixmatchResultsState>(
   (ref) => MusixmatchResultsNotifier()
 );
