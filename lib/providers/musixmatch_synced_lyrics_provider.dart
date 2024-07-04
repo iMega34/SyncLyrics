@@ -1,5 +1,9 @@
 
+import 'dart:io';
+
 import 'package:process_run/cmd_run.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,20 +11,38 @@ class SyncedLyricsState {
   /// State for the synchronized lyrics provider
   ///
   /// Parameters:
-  /// - [syncedLyrics] is the synchronized lyrics for the track as a [List]
+  /// - [track] is the name of the track
+  /// - [artist] is the artist of the track
+  /// - [rawLyrics] are the synchronized lyrics of the track as a [String]
+  /// - [syncedLyrics] are the synchronized lyrics of the track as a [List]
   ///   of [Map]s with its timestamp and lyrics as [String]s
-  const SyncedLyricsState({this.syncedLyrics});
+  const SyncedLyricsState({this.track, this.artist, this.rawLyrics, this.syncedLyrics});
 
   // Class attributes
+  final String? track;
+  final String? artist;
+  final String? rawLyrics;
   final List<Map<String, String>>? syncedLyrics;
 
   /// Copy the current state with new values
   ///
   /// Parameters:
+  /// - [track] is the name of the track as a [String]
+  /// - [artist] is the artist of the track as a [String]
+  /// - [rawLyrics] is the synchronized lyrics for the track as a [String]
   /// - [syncedLyrics] is the synchronized lyrics for the track as a [List]
   ///  of [Map]s with its timestamp and lyrics as [String]s
-  SyncedLyricsState copyWith({List<Map<String, String>>? syncedLyrics})
-    => SyncedLyricsState(syncedLyrics: syncedLyrics ?? this.syncedLyrics);
+  SyncedLyricsState copyWith({
+    String? track,
+    String? artist,
+    String? rawLyrics,
+    List<Map<String, String>>? syncedLyrics
+  }) => SyncedLyricsState(
+    track: track ?? this.track,
+    artist: artist ?? this.artist,
+    rawLyrics: rawLyrics ?? this.rawLyrics,
+    syncedLyrics: syncedLyrics ?? this.syncedLyrics
+  );
 }
 
 class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
@@ -39,8 +61,10 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// the key the timestamp and the value the associated lyrics, both as [String]s
   ///
   /// Parameters:
+  /// - [track] is the name of the track
+  /// - [artist] is the artist of the track
   /// - [lyrics] is the synchronized lyrics for the track as a [String]
-  void loadSyncedLyrics(String lyrics) {
+  void loadSyncedLyrics(String track, String artist, String lyrics) {
     // Splits the lyrics by line, and removes the last two lines to avoid parsing errors.
     //
     // The Musixmatch API returns the synchronized lyrics as shown below:
@@ -65,8 +89,32 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     );
 
     // Store the synchronized lyrics in the state
-    state = state.copyWith(syncedLyrics: syncedLyrics);
+    state = state.copyWith(track: track, artist: artist, rawLyrics: lyrics, syncedLyrics: syncedLyrics);
   }
+
+  // TODO: Implement custom default download directory in the app settings
+  /// Download the synchronized lyrics as an LRC file
+  /// 
+  /// The LRC file is saved by default in the `Downloads` directory of the device,
+  /// however, the user can select the directory where the file will be saved.
+  /// 
+  /// The file is named as `artist - track.lrc`.
+  void downloadLRCFile() async {
+    final initDirectory = (await getDownloadsDirectory())!.path;
+    // Get the directory where the user wants to save the LRC file, showing a dialog
+    // opened in the default directory
+    final downloadDirectory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: "Select the directory to save synchronized lyrics",
+      initialDirectory: initDirectory,
+      lockParentWindow: true
+    );
+
+    // Create, write and save the LRC file in the selected directory
+    final file = File("$downloadDirectory/${state.artist} - ${state.track}.lrc");
+    await file.writeAsString(state.rawLyrics!);
+  }
+
+  
 }
 
 /// Synchronized lyrics provider
