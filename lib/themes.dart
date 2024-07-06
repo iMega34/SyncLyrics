@@ -28,7 +28,7 @@ class AppTheme {
           element: Color.fromARGB(255, 234, 234, 234),
           internalShadow: Color.fromARGB(255, 255, 255, 255),
           externalShadow: Color.fromARGB(255, 176, 180, 192),
-          accent: Color.fromARGB(255, 255, 64, 129),
+          selected: Color.fromARGB(255, 221, 221, 221),
           error: Color.fromARGB(255, 211, 47, 47)
         )
       ]
