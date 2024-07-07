@@ -5,16 +5,18 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
   /// Extends [ThemeData] to include custom colors
   /// 
   /// The custom colors defined are:
-  /// - [element]: The color of the main elements of the app
-  /// - [internalShadow]: The color of the internal shadows
-  /// - [externalShadow]: The color of the external shadows
-  /// - [accent]: The color of the accent elements
-  /// - [error]: The color of the error elements
+  /// - [element] is the color of the main elements of the app
+  /// - [internalShadow] is the color of the internal shadows
+  /// - [externalShadow] is the color of the external shadows
+  /// - [selected] is the color of the selected elements
+  /// - [buttons] is the secondary color for buttons
+  /// - [error] is the color of the error elements
   const CustomAppTheme({
     required this.element,
     required this.internalShadow,
     required this.externalShadow,
-    required this.accent,
+    required this.selected,
+    required this.buttons,
     required this.error,
   });
 
@@ -22,7 +24,8 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
   final Color element;
   final Color internalShadow;
   final Color externalShadow;
-  final Color accent;
+  final Color selected;
+  final Color buttons;
   final Color error;
 
   @override
@@ -30,7 +33,8 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
     Color? element,
     Color? internalShadow,
     Color? externalShadow,
-    Color? accent,
+    Color? selected,
+    Color? buttons,
     Color? error
   }) {
     // Return a new instance of the class with the new values
@@ -38,7 +42,8 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
       element: element ?? this.element,
       internalShadow: internalShadow ?? this.internalShadow,
       externalShadow: externalShadow ?? this.externalShadow,
-      accent: accent ?? this.accent,
+      selected: selected ?? this.selected,
+      buttons: buttons ?? this.buttons,
       error: error ?? this.error
     );
   }
@@ -53,7 +58,8 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
       element: Color.lerp(element, other.element, t)!,
       internalShadow: Color.lerp(internalShadow, other.internalShadow, t)!,
       externalShadow: Color.lerp(externalShadow, other.externalShadow, t)!,
-      accent: Color.lerp(accent, other.accent, t)!,
+      selected: Color.lerp(selected, other.selected, t)!,
+      buttons: Color.lerp(buttons, other.buttons, t)!,
       error: Color.lerp(error, other.error, t)!
     );
   }
