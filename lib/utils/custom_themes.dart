@@ -64,3 +64,55 @@ class CustomAppTheme extends ThemeExtension<CustomAppTheme> {
     );
   }
 }
+
+class CustomButtonTheme extends ThemeExtension<CustomButtonTheme> {
+  /// Extends [ThemeData] to include custom button colors
+  /// 
+  /// The custom colors defined are:
+  /// - [addLine] is the color of the add line button
+  /// - [addSpace] is the color of the add space button
+  /// - [removeLine] is the color of the remove line button
+  /// - [moveLine] is the color of the move line button
+  const CustomButtonTheme({
+    required this.addLine,
+    required this.addSpace,
+    required this.removeLine,
+    required this.moveLine,
+  });
+
+  // Class attributes
+  final Color addLine;
+  final Color addSpace;
+  final Color removeLine;
+  final Color moveLine;
+
+  @override
+  ThemeExtension<CustomButtonTheme> copyWith({
+    Color? addLine,
+    Color? addSpace,
+    Color? removeLine,
+    Color? moveLine
+  }) {
+    // Return a new instance of the class with the new values
+    return CustomButtonTheme(
+      addLine: addLine ?? this.addLine,
+      addSpace: addSpace ?? this.addSpace,
+      removeLine: removeLine ?? this.removeLine,
+      moveLine: moveLine ?? this.moveLine
+    );
+  }
+
+  @override
+  ThemeExtension<CustomButtonTheme> lerp(CustomButtonTheme? other, double t) {
+    // If the other object is not of the same type, return the current object
+    if (other is! CustomButtonTheme) return this;
+
+    // Return a new instance of the class with the interpolated values
+    return CustomButtonTheme(
+      addLine: Color.lerp(addLine, other.addLine, t)!,
+      addSpace: Color.lerp(addSpace, other.addSpace, t)!,
+      removeLine: Color.lerp(removeLine, other.removeLine, t)!,
+      moveLine: Color.lerp(moveLine, other.moveLine, t)!
+    );
+  }
+}
