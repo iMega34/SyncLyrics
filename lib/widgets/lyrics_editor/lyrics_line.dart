@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/utils/custom_themes.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
-import 'package:sync_lyrics/widgets/lyrics_editor/line_buttons.dart';
+import 'package:sync_lyrics/widgets/lyrics_editor/button_row.dart';
 
 class LyricsLine extends ConsumerStatefulWidget {
   /// A single line of lyrics with its timestamp
@@ -75,12 +75,12 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     final theme = Theme.of(context);
     final backgroundColor = theme.scaffoldBackgroundColor;
     final selectedColor = theme.extension<CustomAppTheme>()!.selected;
-    final isSelected = ref.watch(workspaceProvider).selectedLine == widget.index;
+    final selectedLine = ref.watch(workspaceProvider).selectedLine;
+    final isSelected = selectedLine == widget.index;
     final timestampTextWidth = _getTimestampTextWidth(context);
     return LayoutBuilder(
       builder: (context, constraints) => TapRegion(
-        onTapInside: (event) => ref.read(workspaceProvider.notifier).selectLine(widget.index),
-        onTapOutside: (event) => ref.read(workspaceProvider.notifier).deselectLine(),
+        onTapInside: (_) => ref.read(workspaceProvider.notifier).selectLine(widget.index),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -113,20 +113,21 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
                 ],
               ),
             ),
+            // Display the button row when the line is selected
             Positioned(
               top: 10,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 350),
-                child: isSelected ? const LineButtons() : const SizedBox.shrink(),
+                child: isSelected ? const ButtonRow() : const SizedBox.shrink(),
               ),
             ),
             Positioned(
               bottom: 10,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 350),
-                child: isSelected ? const LineButtons(lowerButtons: true) : const SizedBox.shrink(),
+                child: isSelected ? const ButtonRow(lowerRow: true) : const SizedBox.shrink(),
               ),
-            ),
+            )
           ],
         ),
       )
