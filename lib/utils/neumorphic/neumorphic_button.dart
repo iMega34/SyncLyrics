@@ -22,8 +22,10 @@ class NeumorphicButton extends StatefulWidget {
     this.label,
     this.child,
     required this.onPressed,
+    this.color,
     this.margin,
     this.padding,
+    this.borderRadius = 15,
     this.centerContent = true,
     this.enabled = true
   });
@@ -32,8 +34,10 @@ class NeumorphicButton extends StatefulWidget {
   final String? label;
   final Widget? child;
   final VoidCallback onPressed;
+  final Color? color;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
+  final double borderRadius;
   final bool centerContent;
   final bool enabled;
 
@@ -70,8 +74,8 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
         duration: const Duration(milliseconds: 40),
         alignment: widget.centerContent ? Alignment.center : null,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(15),
+          color: widget.color ?? Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
           boxShadow: [
             BoxShadow(
               color: appColors.externalShadow,
