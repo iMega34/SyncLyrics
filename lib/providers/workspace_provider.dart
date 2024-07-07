@@ -80,6 +80,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// - [index] is the index of the selected line
   void selectLine(int index) => state = state.copyWith(selectedLine: index);
 
+  /// Clears the state to deselect the line in the workspace
   void deselectLine() => state = state.clearLine();
 }
 
