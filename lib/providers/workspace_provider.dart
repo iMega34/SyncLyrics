@@ -74,7 +74,7 @@ class WorkspaceState {
 class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   WorkspaceNotifier() : super(const WorkspaceState());
 
-  /// 
+  /// Select a line in the workspace
   /// 
   /// Parameters:
   /// - [index] is the index of the selected line
