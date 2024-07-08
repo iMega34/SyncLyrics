@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync_lyrics/routes/router.dart';
 import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
+import 'package:sync_lyrics/providers/workspace_provider.dart';
 
 class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
   /// Display the synchronized lyrics of a track
@@ -38,9 +39,11 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
           padding: const EdgeInsets.all(15),
           child: Column(
             children: [
+              // Display the track and artist
               Text(widget.track, style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
               Text(widget.artist, style: textTheme.bodyLarge),
               const SizedBox(height: 10),
+              // Display the synchronized lyrics
               Expanded(
                 child: syncedLyricsStream.when(
                   data: (String syncedLyrics) {
@@ -69,6 +72,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                 )
               ),
               const SizedBox(height: 10),
+              // Action buttons
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -83,6 +87,9 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     onPressed: () {
+                      // Load the synchronized lyrics into the `workspaceProvider`
+                      final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics!;
+                      ref.read(workspaceProvider.notifier).loadLyrics(parsedLyrics);
                       Navigator.pop(context);
                       AppRouter.changeScreen(context, 1);
                     }
