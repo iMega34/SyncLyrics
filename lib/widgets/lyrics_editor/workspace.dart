@@ -2,11 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line.dart';
-import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
+import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line.dart';
 
-class Workspace extends ConsumerStatefulWidget {
+class Workspace extends ConsumerWidget {
   /// Workspace for displaying and editing synced lyrics, used in the `LyricsEditorScreen`.
   /// 
   /// This widget displays the synced lyrics in a scrollable list view. Supports
@@ -17,29 +16,11 @@ class Workspace extends ConsumerStatefulWidget {
   const Workspace({super.key});
 
   @override
-  ConsumerState<Workspace> createState() => _TextViewerState();
-}
-
-class _TextViewerState extends ConsumerState<Workspace> {
-
-  @override
-  void initState() {
-    super.initState();
-    final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics;
-    // Load the lyrics into the workspace provider if available
-    if (parsedLyrics != null) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => ref.read(workspaceProvider.notifier).loadLyrics(parsedLyrics)
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
-    final parsedLyrics = ref.watch(syncedLyricsProvider).parsedLyrics;
+    final parsedLyrics = ref.watch(workspaceProvider).parsedLyrics;
 
-    // Display a message if there are no synced lyrics available from the `parsedLyricsProvider`
+    // Display a message if there are no synced lyrics available from the `workspaceProvider`
     if (parsedLyrics == null) {
       return Expanded(
         child: Center(child: Column(
@@ -62,6 +43,7 @@ class _TextViewerState extends ConsumerState<Workspace> {
           child: ListView.builder(
             itemCount: parsedLyrics.length,
             itemBuilder: (_, index) => LyricsLine(
+              key: ValueKey("${parsedLyrics[index].keys.first}-$index"),
               index: index,
               timestamp: parsedLyrics[index].keys.first,
               lyrics: parsedLyrics[index].values.first
