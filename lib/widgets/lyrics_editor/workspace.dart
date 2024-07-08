@@ -6,7 +6,7 @@ import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
 
-class Workspace extends ConsumerWidget {
+class Workspace extends ConsumerStatefulWidget {
   /// Workspace for displaying and editing synced lyrics, used in the `LyricsEditorScreen`.
   /// 
   /// This widget displays the synced lyrics in a scrollable list view. Supports
@@ -17,7 +17,25 @@ class Workspace extends ConsumerWidget {
   const Workspace({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Workspace> createState() => _TextViewerState();
+}
+
+class _TextViewerState extends ConsumerState<Workspace> {
+
+  @override
+  void initState() {
+    super.initState();
+    final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics;
+    // Load the lyrics into the workspace provider if available
+    if (parsedLyrics != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => ref.read(workspaceProvider.notifier).loadLyrics(parsedLyrics)
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(syncedLyricsProvider).parsedLyrics;
 
