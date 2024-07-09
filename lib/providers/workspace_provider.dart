@@ -94,7 +94,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Parse a timestamp from a string
   ///
   /// The timestamp should be in the '[mm:ss.xx]' or '[mm:ss:xx]' format, For example:
-  /// 
+  ///
   /// ```dart
   /// final timestamp = _parseTimestamp("03:54.12");
   /// print(timestamp.runtimeType); // Output: Duration
@@ -190,24 +190,24 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   }
 
   /// Add a new line either above or below the selected line
-  /// 
+  ///
   /// The timestamp of the new line will be the average of the timestamps of the selected line and
   /// the adjacent line, where the format of the timestamp is '[mm:ss.xx]' to ensure coherence with
   /// LRC files format. The content of the new line will be 'New line'.
-  /// 
+  ///
   /// Parameters:
   /// - [addBelow] defines if the new line should be added below the selected line.
   ///     Default value is `false`
   /// - [addSpacer] defines if the new line should be added as a spacer between two lines.
   ///     Default value is `false`
-  /// 
+  ///
   /// Throws:
   /// - [StateError] if either the parsed lyrics or selected line are `null`
-  /// 
+  ///
   /// Detailed example:
-  /// 
+  ///
   /// The function will add a new line as shown below:
-  /// 
+  ///
   /// ```txt
   /// [00:33.37] Come on and lay with me
   /// [00:35.52] Come on and lie to me   <- Selected line, the new line will be added below this one
@@ -242,6 +242,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       throw StateError("Either parsed lyrics or selected line are `null`");
     }
 
+    // TODO: Handle the case where the selected line is the first or last line
+
     final parsedLyrics = state.parsedLyrics!;
     final index = state.selectedLine!;
     final newLineIndex = addBelow ? index + 1 : index - 1;
@@ -260,6 +262,66 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Insert the new line into the parsed lyrics and update the state
     parsedLyrics.insert(newLineIndex, {"[$newLineTimestamp]" : addSpacer ? "" : "New line"});
     state = state.copyWith(parsedLyrics: parsedLyrics);
+  }
+
+  /// Move the selected line either up or down
+  ///
+  /// The content of the selected line will be swapped with the content of the adjacent line,
+  /// leaving the timestamps unchanged.
+  ///
+  /// Parameters:
+  /// - [moveDown] defines if the selected line should be moved down. Default value is `false`
+  ///
+  /// Throws:
+  /// - [StateError] if either the parsed lyrics or selected line are `null`
+  ///
+  /// Detailed example:
+  ///
+  /// The function will move the selected line down as shown below:
+  ///
+  /// ```txt
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me   <- Selected line, the line will be moved down
+  /// [00:37.49] Tell me you love me     <- Adjacent line
+  /// [00:39.12] Say I'm the only one
+  ///
+  /// Since the selected line will be moved down, its content will be swapped with the content
+  /// of the adjacent line, resulting in the following:
+  ///
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Tell me you love me     <- Original adjacent line
+  /// [00:37.49] Come on and lie to me   <- Swapped line
+  /// [00:39.12] Say I'm the only one
+  /// ```
+  ///
+  /// This ensures the synchronization of the lyrics is maintained, as the chronological order
+  /// of the timestamps is crucial for correct playback. Any changes to the timestamps must
+  /// be done manually by the user.
+  ///
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  void moveLine({bool moveDown = false}) {
+    // Check if the parsed lyrics or selected line is null
+    if (state.parsedLyrics == null || state.selectedLine == null) {
+      throw StateError("Either parsed lyrics or selected line are `null`");
+    }
+
+    // TODO: Handle the case where the selected line is the first or last line
+
+    final parsedLyrics = state.parsedLyrics!;
+    final index = state.selectedLine!;
+    final adjacentLineIndex = moveDown ? index + 1 : index - 1;
+
+    // Get the timestamps and lyrics of both the selected line and the adjacent line
+    final selectedLine = parsedLyrics[index].entries.first;
+    final adjacentLine = parsedLyrics[adjacentLineIndex].entries.first;
+
+    // Swap the lyrics of the selected line and the adjacent line, leaving the timestamps unchanged
+    parsedLyrics[index] = {selectedLine.key : adjacentLine.value};
+    parsedLyrics[adjacentLineIndex] = {adjacentLine.key : selectedLine.value};
+
+    // Update the state with the new parsed lyrics and the index of the adjacent line
+    state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: adjacentLineIndex);
   }
 }
 
