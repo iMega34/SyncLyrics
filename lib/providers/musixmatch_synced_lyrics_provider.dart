@@ -56,7 +56,7 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
 
   /// Load to the state the synchronized lyrics for a given track by parsing the
   /// [String] containing them
-  /// 
+  ///
   /// The synchronized lyrics are stored in the state as a [List] of [Map]s, being
   /// the key the timestamp and the value the associated lyrics, both as [String]s
   ///
@@ -64,23 +64,29 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// - [track] is the name of the track
   /// - [artist] is the artist of the track
   /// - [lyrics] is the synchronized lyrics of the track as a [String]
+  ///
+  /// Detailed example:
+  ///
+  /// Splits the lyrics by line and removes the last two lines to avoid parsing errors.
+  ///
+  /// The Musixmatch API returns the synchronized lyrics as shown below:
+  ///
+  /// ```txt
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me
+  /// (...)
+  /// [03:54.12] Tell me you love me (love me)
+  /// [03:56.49] Say I'm the only one (ooh-ooh)
+  /// [04:03.16]     <- Final space. Not needed to be parsed.
+  ///                <- Empty line. By not removing it, the mapping to the [List] of
+  ///                   [Map]s will fail, throwing a `RangeError` (RangeError (end):
+  ///                   Invalid value: Only valid value is 0: 10)
+  /// ```
+  ///
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
   void loadSyncedLyrics(String track, String artist, String lyrics) {
-    // Splits the lyrics by line and removes the last two lines to avoid parsing errors.
-    //
-    // The Musixmatch API returns the synchronized lyrics as shown below:
-    //
-    // [00:33.37] Come on and lay with me
-    // [00:35.52] Come on and lie to me
-    // (...)
-    // [03:54.12] Tell me you love me (love me)
-    // [03:56.49] Say I'm the only one (ooh-ooh)
-    // [04:03.16]     <- Final space. Not needed to be parsed.
-    //                <- Empty line. By not removing it, the mapping to the [List] of
-    //                   [Map]s will fail, throwing a `RangeError` (RangeError (end):
-    //                   Invalid value: Only valid value is 0: 10)
-    //
-    // Track used for testing: "Lie to Me" by Depeche Mode
-    // Used Musixmatch track ID: 283511245
+    // Remove the last two lines to avoid parsing errors
     final lines = List<String>.from(lyrics.split("\n"))
       ..removeLast()..removeLast();
     // Maps the lines to a list of maps with the timestamp and lyrics
@@ -89,16 +95,16 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     );
 
     // Store the synchronized lyrics as both a [String] and a [List] of [Map]s, including
-    // the track and artist in the state 
+    // the track and artist in the state
     state = state.copyWith(track: track, artist: artist, rawSyncedLyrics: lyrics, parsedLyrics: parsedLyrics);
   }
 
   // TODO: Implement custom default download directory in the app settings
   /// Download the synchronized lyrics as an LRC file
-  /// 
+  ///
   /// The LRC file is saved by default in the `Downloads` directory of the device,
   /// however, the user can select the directory where the file will be saved.
-  /// 
+  ///
   /// The file is named as `artist - track.lrc`.
   void downloadLRCFile() async {
     final initDirectory = (await getDownloadsDirectory())!.path;
