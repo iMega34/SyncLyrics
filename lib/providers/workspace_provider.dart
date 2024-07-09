@@ -196,31 +196,47 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// LRC files format. The content of the new line will be 'New line'.
   /// 
   /// Parameters:
-  /// - [addBelow] is whether to add the new line below the selected line. Default value is `false`
+  /// - [addBelow] defines if the new line should be added below the selected line.
+  ///     Default value is `false`
+  /// - [addSpacer] defines if the new line should be added as a spacer between two lines.
+  ///     Default value is `false`
   /// 
   /// Throws:
   /// - [StateError] if either the parsed lyrics or selected line are `null`
-  void addLine({bool addBelow = false}) {
-    // The function will add a new line as shown below:
-    // 
-    // [00:33.37] Come on and lay with me
-    // [00:35.52] Come on and lie to me   <- Selected line, the new line will be added below this one
-    // [00:37.49] Tell me you love me     <- Adjacent line
-    // [00:39.12] Say I'm the only one
-    //
-    // Since the new line will be added below the selected line, its timestamp will be the average
-    // between [00:35.52] and [00:37.49], which is [00:36.50], hence the new line will be added
-    // as shown below:
-    //
-    // [00:33.37] Come on and lay with me
-    // [00:35.52] Come on and lie to me   <- Selected line
-    // [00:36.50] New line                <- Added line
-    // [00:37.49] Tell me you love me     <- Original adjacent line
-    // [00:39.12] Say I'm the only one
-    //
-    // Track used for testing: "Lie to Me" by Depeche Mode
-    // Used Musixmatch track ID: 283511245
-
+  /// 
+  /// Detailed example:
+  /// 
+  /// The function will add a new line as shown below:
+  /// 
+  /// ```txt
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me   <- Selected line, the new line will be added below this one
+  /// [00:37.49] Tell me you love me     <- Adjacent line
+  /// [00:39.12] Say I'm the only one
+  ///
+  /// Since the new line will be added below the selected line, its timestamp will be the average
+  /// between [00:35.52] and [00:37.49], which is [00:36.50], hence the new line will be added
+  /// as shown below:
+  ///
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me   <- Selected line
+  /// [00:36.50] New line                <- Added line
+  /// [00:37.49] Tell me you love me     <- Original adjacent line
+  /// [00:39.12] Say I'm the only one
+  ///
+  /// If it happens that `addSpacer` is set to `true`, then the new line will only contain its
+  /// corresponding timestamp without any lyrics, as shown below:
+  ///
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me   <- Selected line
+  /// [00:36.50]                         <- Added spacer line
+  /// [00:37.49] Tell me you love me     <- Original adjacent line
+  /// [00:39.12] Say I'm the only one
+  /// ```
+  ///
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  void addLine({bool addBelow = false, bool addSpacer = false}) {
     // Check if the parsed lyrics or selected line is null
     if (state.parsedLyrics == null || state.selectedLine == null) {
       throw StateError("Either parsed lyrics or selected line are `null`");
@@ -242,7 +258,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     final newLineTimestamp = _timestampAsString((selectedLineTimestamp + adjacentLineTimestamp) ~/ 2);
 
     // Insert the new line into the parsed lyrics and update the state
-    parsedLyrics.insert(newLineIndex, {"[$newLineTimestamp]" : "New line"});
+    parsedLyrics.insert(newLineIndex, {"[$newLineTimestamp]" : addSpacer ? "" : "New line"});
     state = state.copyWith(parsedLyrics: parsedLyrics);
   }
 }
