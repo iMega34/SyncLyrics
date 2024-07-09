@@ -43,7 +43,7 @@ class Workspace extends ConsumerWidget {
           child: ListView.builder(
             itemCount: parsedLyrics.length,
             itemBuilder: (_, index) => LyricsLine(
-              key: ValueKey("${parsedLyrics[index].keys.first}-$index"),
+              key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
               index: index,
               timestamp: parsedLyrics[index].keys.first,
               lyrics: parsedLyrics[index].values.first
