@@ -99,11 +99,11 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// '[mm:ss:xx]' as well. For example:
   ///
   /// ```dart
-  /// final timestamp1 = _parseTimestamp("03:54.12");
+  /// final timestamp1 = _parseTimestamp("[03:54.12]");
   /// print(timestamp1.runtimeType); // Output: Duration
   /// print(timestamp1); // Output: 0:03:54.120000
   /// 
-  /// final timestamp2 = _parseTimestamp("04:12:99");
+  /// final timestamp2 = _parseTimestamp("[04:12:99"]);
   /// print(timestamp2.runtimeType); // Output: Duration
   /// print(timestamp2); // Output: 0:04:12.990000
   /// ```
@@ -189,8 +189,9 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// - [addSpacer] defines if the new line should be added as a spacer between two lines.
   ///     Default value is `false`
   ///
-  /// Throws:
-  /// - [StateError] if either the parsed lyrics or selected line are `null`
+  /// Returns:
+  /// - `0` if the new line was added successfully
+  /// - `-1` if either the parsed lyrics or selected line are `null`
   ///
   /// Detailed example:
   ///
@@ -228,20 +229,25 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  void addLine({bool addBelow = false, bool addSpacer = false}) {
+  int addLine({bool addBelow = false, bool addSpacer = false}) {
     // Check if the parsed lyrics or selected line is null
     if (state.parsedLyrics == null || state.selectedLine == null) {
-      throw StateError("Either parsed lyrics or selected line are `null`");
+      return -1;
     }
-
-    // TODO: Handle the case where the selected line is the first or last line
 
     final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
     final indexToAdd = addBelow ? index + 1 : index;
 
-    // Get the timestamps of the selected line and the adjacent line
+    // Get the timestamps of the selected line and the adjacent line. If the new line index
+    // is equal to 0, the timestamp of the adjacent line will be set to '[00:00.00]', and if
+    // it's greater than the length of the parsed lyrics, the timestamp of the adjacent line
+    // will be set to '[99:59.99]'.
     final selectedLine = parsedLyrics[index].keys.first;
-    final adjacentLine = parsedLyrics[indexToAdd].keys.first;
+    final adjacentLine = indexToAdd == 0
+      ? "[00:00.00]"
+      : indexToAdd >= parsedLyrics.length
+        ? "[99:59.99]"
+        : parsedLyrics[indexToAdd].keys.first;
 
     // Parse the timestamps into a [Duration] object
     final selectedLineTimestamp = _parseTimestamp(selectedLine);
@@ -255,6 +261,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // the selected line
     parsedLyrics.insert(indexToAdd, {newLineTimestamp : addSpacer ? "" : "New line"});
     state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: addBelow ? null : index + 1);
+    return 0;
   }
 
   /// Move the selected line either up or down
@@ -265,8 +272,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Parameters:
   /// - [moveDown] defines if the selected line should be moved down. Default value is `false`
   ///
-  /// Throws:
-  /// - [StateError] if either the parsed lyrics or selected line are `null`
+  /// Returns:
+  /// - `0` if the selected line was moved successfully
+  /// - `-1` if either the parsed lyrics or selected line are `null`
+  /// - `-2` if the operation can't be performed, e.g., trying to move the first line up
   ///
   /// Detailed example:
   ///
@@ -293,16 +302,19 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  void moveLine({bool moveDown = false}) {
+  int moveLine({bool moveDown = false}) {
     // Check if the parsed lyrics or selected line is null
     if (state.parsedLyrics == null || state.selectedLine == null) {
-      throw StateError("Either parsed lyrics or selected line are `null`");
+      return -1;
     }
-
-    // TODO: Handle the case where the selected line is the first or last line
 
     final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
     final adjacentLineIndex = moveDown ? index + 1 : index - 1;
+
+    // Check if index of the line to be swapped is within the bounds of the parsed lyrics
+    if (adjacentLineIndex < 0 || adjacentLineIndex >= parsedLyrics.length) {
+      return -2;
+    }
 
     // Get the timestamps and lyrics of both the selected line and the adjacent line
     final selectedLine = parsedLyrics[index].entries.first;
@@ -314,6 +326,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // Update the state with the new parsed lyrics and the index of the adjacent line
     state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: adjacentLineIndex);
+    return 0;
   }
 
   /// Remove a line either above or below the selected line
@@ -324,8 +337,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// - [removeBelow] defines if the line below the selected line should be removed. Default value is `false`
   /// - [thisLine] defines if the selected line should be removed. Default value is `false`
   /// 
-  /// Throws:
-  /// - [StateError] if either the parsed lyrics or selected line are `null`
+  /// Returns:
+  /// - `0` if the line was removed successfully
+  /// - `-1` if either the parsed lyrics or selected line are `null`
+  /// - `-2` if the operation can't be performed, e.g., trying to remove below the last line
   /// 
   /// Detailed example:
   /// 
@@ -347,21 +362,25 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  void removeLine({bool removeBelow = false, bool thisLine = false}) {
+  int removeLine({bool removeBelow = false, bool thisLine = false}) {
     // Check if the parsed lyrics or selected line is null
     if (state.parsedLyrics == null || state.selectedLine == null) {
-      throw StateError("Either parsed lyrics or selected line are `null`");
+      return -1;
     }
-
-    // TODO: Handle the case where the selected line is the first or last line
 
     final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
     final indexToRemove = thisLine ? index : (removeBelow ? index + 1 : index - 1);
+
+    // Check if the index to remove is within the bounds of the parsed lyrics
+    if (indexToRemove < 0 || indexToRemove >= parsedLyrics.length) {
+      return -2;
+    }
 
     // Remove the line from the parsed lyrics and update the state, the selected line index
     // will be updated to the adjacent line index if the line above the selected line is removed
     parsedLyrics.removeAt(indexToRemove);
     state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: removeBelow ? null : indexToRemove);
+    return 0;
   }
 }
 
