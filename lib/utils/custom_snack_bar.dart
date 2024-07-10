@@ -110,13 +110,7 @@ class _CustomSnackBarState extends State<CustomSnackBar> with TickerProviderStat
     // Ensuring the widget is removed from the tree after the exit animation is completed
     _slideInController.addStatusListener((status) {
       if (mounted && status == AnimationStatus.completed) {
-        Future.delayed(widget.duration).then((_) {
-          if (mounted) {
-            setState(() => _isClosing = true);
-            _slideOutController.forward();
-            _fadeController.reverse();
-          }
-        });
+        Future.delayed(widget.duration).then((_) => _dismissSnackBar());
       }
     });
   }
@@ -127,6 +121,17 @@ class _CustomSnackBarState extends State<CustomSnackBar> with TickerProviderStat
     _slideOutController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+  /// Dismisses the snackbar by starting the exit animation
+  /// 
+  /// The exit animation will slide the snackbar out of the screen and fade it out
+  void _dismissSnackBar() {
+    if (mounted) {
+      setState(() => _isClosing = true);
+      _slideOutController.forward();
+      _fadeController.reverse();
+    }
   }
 
   @override
@@ -162,26 +167,42 @@ class _CustomSnackBarState extends State<CustomSnackBar> with TickerProviderStat
           child: Material(
             elevation: 4.0,
             borderRadius: BorderRadius.circular(15),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: snackBarColor,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: textTheme.titleLarge!.copyWith(color: Colors.white),
+            child: Stack(
+              children: [
+                // SnackBar content
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    color: snackBarColor,
                   ),
-                  Text(
-                    widget.message,
-                    style: textTheme.titleSmall!.copyWith(color: Colors.white),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: textTheme.titleLarge!.copyWith(color: Colors.white),
+                      ),
+                      Text(
+                        widget.message,
+                        style: textTheme.titleSmall!.copyWith(color: Colors.white),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                // Dismiss button
+                Positioned(
+                  right: 10, top: 10,
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: _dismissSnackBar,
+                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
