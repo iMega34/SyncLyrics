@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/utils/custom_themes.dart';
+import 'package:sync_lyrics/utils/custom_snack_bar.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
 import 'package:sync_lyrics/widgets/lyrics_editor/button_row_item.dart';
 
@@ -16,6 +17,35 @@ class ButtonRow extends ConsumerWidget {
   // Class attributes
   final bool lowerRow;
 
+  /// Handles error status codes
+  /// 
+  /// Displays a [CustomSnackBar] based on the status code to alert the user of an error
+  /// 
+  /// Parameters:
+  /// - [context] is the current context
+  /// - [statusCode] is the status code
+  /// - [message] is the message to display
+  void handleStatusCode(BuildContext context, int statusCode, {String message = "Error"}) {
+    switch (statusCode) {
+      case -1:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.error,
+          title: "Selection Error",
+          message: "Either the selected line or the lyrics info is empty"
+        );
+        break;
+      case -2:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.error,
+          title: "Operation Error",
+          message: message
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonColor = Theme.of(context).extension<CustomButtonTheme>()!;
@@ -27,7 +57,10 @@ class ButtonRow extends ConsumerWidget {
           margin: const EdgeInsets.only(right: 5),
           color: buttonColor.moveLine,
           tooltipText: lowerRow ? "Move line down" : "Move line up",
-          onPressed: () => ref.read(workspaceProvider.notifier).moveLine(moveDown: lowerRow)
+          onPressed: () {
+            final statusCode = ref.read(workspaceProvider.notifier).moveLine(moveDown: lowerRow);
+            handleStatusCode(context, statusCode, message: lowerRow ? "Can't move line down" : "Can't move line up");
+          }
         ),
         // Add space above or below
         ButtonRowItem(
@@ -35,7 +68,10 @@ class ButtonRow extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 5),
           color: buttonColor.addSpace,
           tooltipText: lowerRow ? "Add space below" : "Add space above",
-          onPressed: () => ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow, addSpacer: true)
+          onPressed: () {
+            final statusCode = ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow, addSpacer: true);
+            handleStatusCode(context, statusCode);
+          }
         ),
         // Add new line above or below
         ButtonRowItem(
@@ -43,7 +79,10 @@ class ButtonRow extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 5),
           color: buttonColor.addLine,
           tooltipText: lowerRow ? "Add new line below" : "Add new line above",
-          onPressed: () => ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow)
+          onPressed: () {
+            final statusCode = ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow);
+            handleStatusCode(context, statusCode);
+          }
         ),
         // Remove line above or below
         ButtonRowItem(
@@ -51,7 +90,10 @@ class ButtonRow extends ConsumerWidget {
           margin: const EdgeInsets.only(left: 5),
           color: buttonColor.removeLine,
           tooltipText: lowerRow ? "Remove line below" : "Remove line above",
-          onPressed: () => ref.read(workspaceProvider.notifier).removeLine(removeBelow: lowerRow)
+          onPressed: () {
+            final statusCode = ref.read(workspaceProvider.notifier).removeLine(removeBelow: lowerRow);
+            handleStatusCode(context, statusCode, message: lowerRow ? "Can't remove line below" : "Can't remove line above");
+          }
         )
       ],
     );
