@@ -37,7 +37,13 @@ class AppTheme {
           addSpace: Color.fromARGB(255, 245, 223, 114),
           removeLine: Color.fromARGB(255, 219, 110, 102),
           moveLine: Color.fromARGB(255, 117, 174, 221)
-        )
+        ),
+        SnackBarTheme(
+          success: Color.fromARGB(255, 33, 166, 86),
+          warning: Color.fromARGB(255, 239, 108, 0),
+          error: Color.fromARGB(255, 230, 31, 31),
+          info: Color.fromARGB(255, 50, 130, 184)
+        ),
       ]
     );
   }

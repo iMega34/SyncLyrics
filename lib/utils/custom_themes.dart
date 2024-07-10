@@ -116,3 +116,55 @@ class CustomButtonTheme extends ThemeExtension<CustomButtonTheme> {
     );
   }
 }
+
+class SnackBarTheme extends ThemeExtension<SnackBarTheme> {
+  /// Extends [ThemeData] to include custom snackbar colors
+  /// 
+  /// The custom colors defined are:
+  /// - [success] is the color of the success snackbar
+  /// - [warning] is the color of the warning snackbar
+  /// - [error] is the color of the error snackbar
+  /// - [info] is the color of the info snackbar
+  const SnackBarTheme({
+    required this.success,
+    required this.warning,
+    required this.error,
+    required this.info,
+  });
+
+  // Class attributes
+  final Color success;
+  final Color warning;
+  final Color error;
+  final Color info;
+
+  @override
+  ThemeExtension<SnackBarTheme> copyWith({
+    Color? success,
+    Color? warning,
+    Color? error,
+    Color? info,
+  }) {
+    // Return a new instance of the class with the new values
+    return SnackBarTheme(
+      success: success ?? this.success,
+      warning: warning ?? this.warning,
+      error: error ?? this.error,
+      info: info ?? this.info,
+    );
+  }
+
+  @override
+  ThemeExtension<SnackBarTheme> lerp(SnackBarTheme? other, double t) {
+    // If the other object is not of the same type, return the current object
+    if (other is! SnackBarTheme) return this;
+
+    // Return a new instance of the class with the interpolated values
+    return SnackBarTheme(
+      success: Color.lerp(success, other.success, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      error: Color.lerp(error, other.error, t)!,
+      info: Color.lerp(info, other.info, t)!,
+    );
+  }
+}
