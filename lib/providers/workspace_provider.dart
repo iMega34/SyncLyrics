@@ -92,40 +92,31 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   void deselectLine() => state = state.clearLine();
 
   /// Parse a timestamp from a string
-  ///
-  /// The timestamp should be in the '[mm:ss.xx]' or '[mm:ss:xx]' format, For example:
+  /// 
+  /// The timestamp should be in the '[mm:ss.xx]' format, since the Musixmatch API returns
+  /// timestamps in this format. However, to ensure compatibility with other sources such as
+  /// the user's own LRC files, the function also accepts timestamps in the format of
+  /// '[mm:ss:xx]' as well. For example:
   ///
   /// ```dart
-  /// final timestamp = _parseTimestamp("03:54.12");
-  /// print(timestamp.runtimeType); // Output: Duration
-  /// print(timestamp); // Output: 0:03:54.120000
+  /// final timestamp1 = _parseTimestamp("03:54.12");
+  /// print(timestamp1.runtimeType); // Output: Duration
+  /// print(timestamp1); // Output: 0:03:54.120000
+  /// 
+  /// final timestamp2 = _parseTimestamp("04:12:99");
+  /// print(timestamp2.runtimeType); // Output: Duration
+  /// print(timestamp2); // Output: 0:04:12.990000
   /// ```
-  ///
+  /// 
   /// Parameters:
   /// - [timestamp] is the timestamp as a [String]
-  /// - [adjustMilliseconds] is whether to adjust milliseconds from the range of [0, 99]
-  ///   to [0, 999]. Default value is `true`
+  /// - [adjustMilliseconds] defines if milliseconds should be adjusted from the [0, 99]
+  ///     range to the [0, 999] range, since [Duration] class expects milliseconds to be
+  ///     within that range. Default value is `true`
   ///
   /// Returns:
   /// - The parsed timestamp as a [Duration] object
   Duration _parseTimestamp(String timestamp, {bool adjustMilliseconds = true}) {
-    // Split the timestamp into minutes, seconds, and milliseconds and convert them
-    // to a [Duration] object
-    //
-    // The Musixmatch API returns timestamps in the format of '[mm:ss.xx]' as shown below:
-    //
-    // [00:33.37] Come on and lay with me
-    // [00:35.52] Come on and lie to me
-    // (...)
-    // [03:54.12] Tell me you love me (love me)
-    // [03:56.49] Say I'm the only one (ooh-ooh)
-    //
-    // However, to ensure compatibility with other sources such as the user's own LRC files,
-    // the function also accepts timestamps in the format of '[mm:ss:xx]'.
-    //
-    // Track used for testing: "Lie to Me" by Depeche Mode
-    // Used Musixmatch track ID: 283511245
-
     // Check if the timestamp is in the correct format
     final regex = RegExp(r"\[\d{2}:\d{2}[:.]\d{2}\]");
     if (!regex.hasMatch(timestamp)) {
@@ -134,10 +125,6 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // Split the timestamp into minutes, seconds, and milliseconds and convert them
     // to a [Duration] object.
-    //
-    // Note that the milliseconds can be multiplied by 10 to convert them to the correct range,
-    // since the [Duration] class expects the milliseconds to be in the range of [0, 999]
-    // while the Musixmatch API returns them in the range of [0, 99].
     final splittedTimestamp = timestamp.substring(1, 9).split(RegExp(r"[.:]"));
     final parsedTimestamp = Duration(
       minutes: int.parse(splittedTimestamp[0]),
@@ -162,7 +149,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// ```
   ///
   /// Returns:
-  /// - The duration as a [String]
+  /// - The duration as a [String] in the format of '[mm:ss.xx]'
   String _timestampAsString(Duration timestamp) {
     // Get the total milliseconds
     int totalMilliseconds = timestamp.inMilliseconds;
@@ -184,9 +171,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       totalMilliseconds = totalMilliseconds ~/ 10;
     }
 
+    // Ensure the milliseconds are padded with a zero when they are less than 10
     final millisecondsText = totalMilliseconds.toString().padLeft(2, "0");
 
-    return "$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText";
+    return "[$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText]";
   }
 
   /// Add a new line either above or below the selected line
@@ -206,31 +194,35 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// Detailed example:
   ///
-  /// The function will add a new line as shown below:
+  /// The function will add a new line above the selected line as shown below:
   ///
   /// ```txt
   /// [00:33.37] Come on and lay with me
-  /// [00:35.52] Come on and lie to me   <- Selected line, the new line will be added below this one
-  /// [00:37.49] Tell me you love me     <- Adjacent line
+  /// [00:35.52] Come on and lie to me   <- Adjacent line
+  /// [00:37.49] Tell me you love me     <- Selected line, the new line will be added above
   /// [00:39.12] Say I'm the only one
-  ///
-  /// Since the new line will be added below the selected line, its timestamp will be the average
-  /// between [00:35.52] and [00:37.49], which is [00:36.50], hence the new line will be added
+  /// 
+  /// Since the new line will be added above the selected line, its timestamp will be the average
+  /// between [00:37.49] and [00:35.52], which is [00:36.50], hence the new line will be added
   /// as shown below:
-  ///
+  /// 
   /// [00:33.37] Come on and lay with me
-  /// [00:35.52] Come on and lie to me   <- Selected line
+  /// [00:35.52] Come on and lie to me   <- Adjacent line
   /// [00:36.50] New line                <- Added line
-  /// [00:37.49] Tell me you love me     <- Original adjacent line
+  /// [00:37.49] Tell me you love me     <- Selected line
   /// [00:39.12] Say I'm the only one
-  ///
+  /// 
+  /// In the case like the one above, the selected line index will be updated to the original
+  /// selected line index plus one, to ensure the selected line remains selected after the new
+  /// line is added.
+  /// 
   /// If it happens that `addSpacer` is set to `true`, then the new line will only contain its
   /// corresponding timestamp without any lyrics, as shown below:
   ///
   /// [00:33.37] Come on and lay with me
-  /// [00:35.52] Come on and lie to me   <- Selected line
+  /// [00:35.52] Come on and lie to me   <- Adjacent line
   /// [00:36.50]                         <- Added spacer line
-  /// [00:37.49] Tell me you love me     <- Original adjacent line
+  /// [00:37.49] Tell me you love me     <- Selected line
   /// [00:39.12] Say I'm the only one
   /// ```
   ///
@@ -244,13 +236,12 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // TODO: Handle the case where the selected line is the first or last line
 
-    final parsedLyrics = state.parsedLyrics!;
-    final index = state.selectedLine!;
-    final newLineIndex = addBelow ? index + 1 : index - 1;
+    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
+    final indexToAdd = addBelow ? index + 1 : index;
 
     // Get the timestamps of the selected line and the adjacent line
     final selectedLine = parsedLyrics[index].keys.first;
-    final adjacentLine = parsedLyrics[newLineIndex].keys.first;
+    final adjacentLine = parsedLyrics[indexToAdd].keys.first;
 
     // Parse the timestamps into a [Duration] object
     final selectedLineTimestamp = _parseTimestamp(selectedLine);
@@ -259,9 +250,11 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Calculate the average of the timestamps to get the new line's timestamp
     final newLineTimestamp = _timestampAsString((selectedLineTimestamp + adjacentLineTimestamp) ~/ 2);
 
-    // Insert the new line into the parsed lyrics and update the state
-    parsedLyrics.insert(newLineIndex, {"[$newLineTimestamp]" : addSpacer ? "" : "New line"});
-    state = state.copyWith(parsedLyrics: parsedLyrics);
+    // Insert the new line into the parsed lyrics and update the state, the selected line index
+    // will be updated to the original selected line index plus one if the new line is added above
+    // the selected line
+    parsedLyrics.insert(indexToAdd, {newLineTimestamp : addSpacer ? "" : "New line"});
+    state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: addBelow ? null : index + 1);
   }
 
   /// Move the selected line either up or down
@@ -290,7 +283,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// [00:33.37] Come on and lay with me
   /// [00:35.52] Tell me you love me     <- Original adjacent line
-  /// [00:37.49] Come on and lie to me   <- Swapped line
+  /// [00:37.49] Come on and lie to me   <- Line moved down
   /// [00:39.12] Say I'm the only one
   /// ```
   ///
@@ -308,8 +301,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // TODO: Handle the case where the selected line is the first or last line
 
-    final parsedLyrics = state.parsedLyrics!;
-    final index = state.selectedLine!;
+    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
     final adjacentLineIndex = moveDown ? index + 1 : index - 1;
 
     // Get the timestamps and lyrics of both the selected line and the adjacent line
@@ -322,6 +314,54 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // Update the state with the new parsed lyrics and the index of the adjacent line
     state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: adjacentLineIndex);
+  }
+
+  /// Remove a line either above or below the selected line
+  /// 
+  /// Both the timestamp and lyrics of the line to be removed will be deleted from the parsed lyrics.
+  /// 
+  /// Parameters:
+  /// - [removeBelow] defines if the line below the selected line should be removed. Default value is `false`
+  /// - [thisLine] defines if the selected line should be removed. Default value is `false`
+  /// 
+  /// Throws:
+  /// - [StateError] if either the parsed lyrics or selected line are `null`
+  /// 
+  /// Detailed example:
+  /// 
+  /// The function will remove the line above the selected line as shown below:
+  /// 
+  /// ```txt
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me   <- Adjacent line, the line will be removed
+  /// [00:37.49] Tell me you love me     <- Selected line
+  /// [00:39.12] Say I'm the only one
+  /// 
+  /// Since the line above the selected line will be removed, the selected line will be moved up
+  /// to replace the removed line, resulting in the following:
+  /// 
+  /// [00:33.37] Come on and lay with me
+  /// [00:37.49] Tell me you love me     <- This was the adjacent line, now it's the selected line
+  /// [00:39.12] Say I'm the only one
+  /// ```
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  void removeLine({bool removeBelow = false, bool thisLine = false}) {
+    // Check if the parsed lyrics or selected line is null
+    if (state.parsedLyrics == null || state.selectedLine == null) {
+      throw StateError("Either parsed lyrics or selected line are `null`");
+    }
+
+    // TODO: Handle the case where the selected line is the first or last line
+
+    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
+    final indexToRemove = thisLine ? index : (removeBelow ? index + 1 : index - 1);
+
+    // Remove the line from the parsed lyrics and update the state, the selected line index
+    // will be updated to the adjacent line index if the line above the selected line is removed
+    parsedLyrics.removeAt(indexToRemove);
+    state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: removeBelow ? null : indexToRemove);
   }
 }
 
