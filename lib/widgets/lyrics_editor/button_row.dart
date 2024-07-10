@@ -1,10 +1,12 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/utils/custom_themes.dart';
+import 'package:sync_lyrics/providers/workspace_provider.dart';
 import 'package:sync_lyrics/widgets/lyrics_editor/button_row_item.dart';
 
-class ButtonRow extends StatelessWidget {
+class ButtonRow extends ConsumerWidget {
   /// A row of buttons for the lyrics editor
   /// 
   /// Parameters:
@@ -15,7 +17,7 @@ class ButtonRow extends StatelessWidget {
   final bool lowerRow;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final buttonColor = Theme.of(context).extension<CustomButtonTheme>()!;
     return Row(
       children: [
@@ -25,7 +27,7 @@ class ButtonRow extends StatelessWidget {
           margin: const EdgeInsets.only(right: 5),
           color: buttonColor.moveLine,
           tooltipText: lowerRow ? "Move line down" : "Move line up",
-          onPressed: () => print('Line moved ${lowerRow ? 'down' : 'up'}')
+          onPressed: () => ref.read(workspaceProvider.notifier).moveLine(moveDown: lowerRow)
         ),
         // Add space above or below
         ButtonRowItem(
@@ -33,7 +35,7 @@ class ButtonRow extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 5),
           color: buttonColor.addSpace,
           tooltipText: lowerRow ? "Add space below" : "Add space above",
-          onPressed: () => print('Space added ${lowerRow ? 'below' : 'above'}')
+          onPressed: () => ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow, addSpacer: true)
         ),
         // Add new line above or below
         ButtonRowItem(
@@ -41,7 +43,7 @@ class ButtonRow extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 5),
           color: buttonColor.addLine,
           tooltipText: lowerRow ? "Add new line below" : "Add new line above",
-          onPressed: () => print('New line added ${lowerRow ? 'below' : 'above'}')
+          onPressed: () => ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow)
         ),
         // Remove line above or below
         ButtonRowItem(
@@ -49,7 +51,7 @@ class ButtonRow extends StatelessWidget {
           margin: const EdgeInsets.only(left: 5),
           color: buttonColor.removeLine,
           tooltipText: lowerRow ? "Remove line below" : "Remove line above",
-          onPressed: () => print('Line removed ${lowerRow ? 'below' : 'above'}')
+          onPressed: () => ref.read(workspaceProvider.notifier).removeLine(removeBelow: lowerRow)
         )
       ],
     );
