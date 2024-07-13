@@ -15,9 +15,12 @@ class Workspace extends ConsumerWidget {
   /// `workspace_provider.dart` file.
   const Workspace({super.key});
 
+  /// Handles the tap event outside the workspace.
+  /// 
+  /// Deselects the currently selected line and validates the synced lyrics.
   void _onTapOutside(WidgetRef ref) {
     ref.read(workspaceProvider.notifier).deselectLine();
-    ref.read(workspaceProvider.notifier).verifyParsedLyrics();
+    ref.read(workspaceProvider.notifier).validateSyncedLyrics();
   }
 
   @override
