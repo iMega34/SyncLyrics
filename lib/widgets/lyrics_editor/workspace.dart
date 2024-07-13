@@ -15,6 +15,11 @@ class Workspace extends ConsumerWidget {
   /// `workspace_provider.dart` file.
   const Workspace({super.key});
 
+  void _onTapOutside(WidgetRef ref) {
+    ref.read(workspaceProvider.notifier).deselectLine();
+    ref.read(workspaceProvider.notifier).verifyParsedLyrics();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
@@ -39,7 +44,7 @@ class Workspace extends ConsumerWidget {
       child: ScrollConfiguration(
         behavior: const ScrollBehavior(),
         child: TapRegion(
-          onTapOutside: (_) => ref.read(workspaceProvider.notifier).deselectLine(),
+          onTapOutside: (_) => _onTapOutside(ref),
           child: ListView.builder(
             itemCount: parsedLyrics.length,
             itemBuilder: (_, index) => LyricsLine(
