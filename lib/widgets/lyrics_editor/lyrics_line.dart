@@ -13,42 +13,25 @@ class LyricsLine extends ConsumerStatefulWidget {
   /// 
   /// Parameters:
   /// - [index] is whether the line is selected or not
-  /// - [timestamp] is the timestamp of the lyrics
-  /// - [lyrics] is the lyrics for the timestamp
+  /// - [timestampController] is the controller for the timestamp text field
+  /// - [contentController] is the controller for the content text field
   const LyricsLine({
     super.key,
     required this.index,
-    required this.timestamp,
-    required this.lyrics
+    required this.timestampController,
+    required this.contentController
   });
 
   // Class attributes
   final int index;
-  final String timestamp;
-  final String lyrics;
+  final TextEditingController timestampController;
+  final TextEditingController contentController;
 
   @override
   ConsumerState<LyricsLine> createState() => _LyricsLineState();
 }
 
 class _LyricsLineState extends ConsumerState<LyricsLine> {
-  late TextEditingController _timestampController;
-  late TextEditingController _lyricsController;
-
-  @override
-  void initState() {
-    super.initState();
-    _timestampController = TextEditingController(text: widget.timestamp);
-    _lyricsController = TextEditingController(text: widget.lyrics);
-  }
-
-  @override
-  void dispose() {
-    _timestampController.dispose();
-    _lyricsController.dispose();
-    super.dispose();
-  }
-
   /// Get the width of the timestamp text
   /// 
   /// Parameters:
@@ -58,16 +41,16 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
   /// - The width of the text as a [double]
   double _getTimestampTextWidth(BuildContext context) {
     // Return 0 if the text is empty
-    if (widget.timestamp.isEmpty) return 0;
+    if (widget.timestampController.text.isEmpty) return 0;
 
     // Create a text painter to measure the width of the text
     final textPainter = TextPainter(
-      text: TextSpan(text: widget.timestamp),
+      text: TextSpan(text: widget.timestampController.text),
       textDirection: TextDirection.ltr,
       maxLines: 1
     )..layout(maxWidth: double.infinity);
 
-    return textPainter.width;
+    return textPainter.width * 1.4;
   }
 
   @override
@@ -96,9 +79,9 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: timestampTextWidth * 1.4,
+                    width: timestampTextWidth,
                     child: TextField(
-                      controller: _timestampController,
+                      controller: widget.timestampController,
                       decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
                       maxLength: 10,
                     )
@@ -106,7 +89,7 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
                   const SizedBox(width: 5),
                   Expanded(
                     child: TextField(
-                      controller: _lyricsController,
+                      controller: widget.contentController,
                       decoration: const InputDecoration(border: InputBorder.none, isDense: true)
                     )
                   )
