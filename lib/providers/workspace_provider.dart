@@ -1,6 +1,8 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:sync_lyrics/extensions.dart';
+
 class WorkspaceState {
   /// State for the workspace provider
   ///
@@ -74,25 +76,31 @@ class WorkspaceState {
 class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   WorkspaceNotifier() : super(const WorkspaceState());
 
-  /// Load the lyrics into the workspace
+  /// Updates the lyrics in the workspace.
+  ///
+  /// This function can be used to load the lyrics for the first time or update them
+  /// whenever a change happens.
   ///
   /// Parameters:
-  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
-  ///  of [Map]s with its timestamp and lyrics as [String]s
-  void loadLyrics(List<Map<String, String>> parsedLyrics)
+  /// - [parsedLyrics] are the parsed synced lyrics of the track as a [List]
+  ///   of [Map]s with its timestamp and lyrics as [String]s.
+  void updateSyncedLyrics(List<Map<String, String>> parsedLyrics)
     => state = state.copyWith(parsedLyrics: parsedLyrics);
 
   /// Select a line in the workspace
+  ///
+  /// The selected line is used to perform operations such as moving, deleting, adding
+  /// or editing
   ///
   /// Parameters:
   /// - [index] is the index of the selected line
   void selectLine(int index) => state = state.copyWith(selectedLine: index);
 
-  /// Clears the state to deselect the line in the workspace
+  /// Clears the state from the selected line
   void deselectLine() => state = state.clearLine();
 
   /// Parse a timestamp from a string
-  /// 
+  ///
   /// The timestamp should be in the '[mm:ss.xx]' format, since the Musixmatch API returns
   /// timestamps in this format. However, to ensure compatibility with other sources such as
   /// the user's own LRC files, the function also accepts timestamps in the format of
@@ -102,12 +110,12 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// final timestamp1 = _parseTimestamp("[03:54.12]");
   /// print(timestamp1.runtimeType); // Output: Duration
   /// print(timestamp1); // Output: 0:03:54.120000
-  /// 
+  ///
   /// final timestamp2 = _parseTimestamp("[04:12:99"]);
   /// print(timestamp2.runtimeType); // Output: Duration
   /// print(timestamp2); // Output: 0:04:12.990000
   /// ```
-  /// 
+  ///
   /// Parameters:
   /// - [timestamp] is the timestamp as a [String]
   /// - [adjustMilliseconds] defines if milliseconds should be adjusted from the [0, 99]
@@ -177,6 +185,130 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     return "[$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText]";
   }
 
+  /// Find duplicated lines in the parsed lyrics
+  ///
+  /// Duplicated lines in the parsed lyrics are considered to be lines with the same timestamp.
+  /// Timestamps must be unique to ensure the synchronization of the lyrics is handled correctly
+  /// on any platform or application.
+  ///
+  /// This function analyzes the parsed lyrics stored in `state.parsedLyrics`.
+  ///
+  /// Returns:
+  /// - A named [Record] with the following fields:
+  ///   - `statusCode`: An [int] representing the status code
+  ///   - `duplicatesFound`: A [Map] of the line indices as [int] with their corresponding duplicate
+  ///      timestamps as [String]
+  ///
+  /// Status codes:
+  /// - `0` if duplicates were not found. All timestamps are unique
+  /// - `1` if duplicates were found. One or more timestamps are duplicated
+  /// - `-1` if the parsed lyrics are `null`. No lines loaded to check for duplicates
+  ///
+  /// Detailed example:
+  ///
+  /// ```dart
+  /// final parsedLyrics = [
+  ///   {"[00:33.37]" : "Come on and lay with me"},
+  ///   {"[00:35.52]" : "Come on and lie to me"},
+  ///   {"[00:35.52]" : "Come on and lie to me"},
+  ///   {"[00:37.49]" : "Tell me you love me"},
+  ///   {"[00:39.12]" : "Say I'm the only one"}
+  /// ];
+  /// final (statusCode, duplicatesFound) = findDuplicates();
+  /// print(statusCode); Output: 1
+  /// print(duplicatesFound); // Output: {
+  /// //  1 : "[00:35.52] Come on and lie to me",
+  /// //  2 : "[00:35.52] Come on and lie to me"
+  /// // }
+  /// ```
+  ///
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  ({int statusCode, Map<int, String> duplicatesFound}) findDuplicates() {
+    // Check if the parsed lyrics are null
+    if (state.parsedLyrics == null) {
+      return (statusCode: -1, duplicatesFound: {});
+    }
+
+    // Store indices of the lines with their corresponding timestamps if duplicates are found
+    final Map<String, int> frequencies = {};
+    final Map<int, String> duplicatesFound = {};
+    for (final line in state.parsedLyrics!.indexed) {
+      final (timestamp, content) = line.$2.entries.first.record;
+      frequencies[timestamp] = (frequencies[timestamp] ?? 0) + 1;
+      if (frequencies[timestamp]! > 1) duplicatesFound[line.$1] = "$timestamp $content";
+    }
+
+    return (statusCode: duplicatesFound.isNotEmpty.toInt(), duplicatesFound: duplicatesFound);
+  }
+
+  /// Check the chronological order of the parsed lyrics
+  ///
+  /// Unordered lines in the parsed lyrics are considered to be lines whose timestamps are not
+  /// correctly placed in chronological ascending order. Chronological order is crucial for
+  /// correct playback of the synchronized lyrics.
+  ///
+  /// This function analyzes the parsed lyrics stored in `state.parsedLyrics`.
+  ///
+  /// Returns:
+  /// - A named [Record] with the following fields:
+  ///   - `statusCode`: An [int] representing the status code
+  ///   - `unorderedLines`: A [Map] of the line indices as [int] with their corresponding unordered
+  ///      timestamps as [String]
+  ///
+  /// Status codes:
+  /// - `0` if unordered lines were not found. All lines are in chronological order
+  /// - `1` if unordered lines were found. One or more lines are not in chronological order
+  /// - `-1` if the parsed lyrics are `null`. No lines loaded to check for chronological order
+  ///
+  /// Detailed example:
+  ///
+  /// ```dart
+  /// final parsedLyrics = [
+  ///   {"[00:33.37]" : "Come on and lay with me"},
+  ///   {"[00:35.52]" : "Come on and lie to me"},
+  ///   {"[00:37.49]" : "Tell me you love me"},
+  ///   {"[00:36.50]" : "New line"},
+  ///   {"[00:39.12]" : "Say I'm the only one"}
+  /// ];
+  /// final (statusCode, unorderedLines) = checkChronologicalOrder();
+  /// print(statusCode); // Output: 1
+  /// print(unorderedLines); // Output: {3 : "[00:36.50] New line"}
+  /// ```
+  ///
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  ({int statusCode, Map<int, String> unorderedLines}) checkChronologicalOrder() {
+    // Check if the parsed lyrics are null
+    if (state.parsedLyrics == null) {
+      return (statusCode: -1, unorderedLines: {});
+    }
+
+    // Get the indices of the lines with their corresponding timestamps
+    final timestampIndices = state.parsedLyrics!.indexed
+      .map(((int, Map<String, String>) line) => {line.$1 : _parseTimestamp(line.$2.keys.first)})
+      .toList();
+    // Create a sorted list of the timestamps to compare with the original list
+    final List<Map<int, Duration>> sortedTimestamps = List.from(timestampIndices)
+      ..sort((a, b) => a.values.first.compareTo(b.values.first));
+
+    // Store indices of the lines with their corresponding timestamps if an unordered line is found
+    final Map<int, String> unorderedLines = {
+      for (int idx = 0; idx < timestampIndices.length; idx++)
+        if (timestampIndices[idx] != sortedTimestamps[idx])
+          timestampIndices[idx].keys.first : _timestampAsString(timestampIndices[idx].values.first)
+    };
+
+    return (statusCode: unorderedLines.isNotEmpty.toInt(), unorderedLines: unorderedLines);
+  }
+
+  bool validateSyncedLyrics() {
+    final (statusCode: statusCode1, :duplicatesFound) = findDuplicates();
+    final (statusCode: statusCode2, :unorderedLines) = checkChronologicalOrder();
+
+    return true;
+  }
+
   /// Add a new line either above or below the selected line
   ///
   /// The timestamp of the new line will be the average of the timestamps of the selected line and
@@ -202,21 +334,21 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// [00:35.52] Come on and lie to me   <- Adjacent line
   /// [00:37.49] Tell me you love me     <- Selected line, the new line will be added above
   /// [00:39.12] Say I'm the only one
-  /// 
+  ///
   /// Since the new line will be added above the selected line, its timestamp will be the average
   /// between [00:37.49] and [00:35.52], which is [00:36.50], hence the new line will be added
   /// as shown below:
-  /// 
+  ///
   /// [00:33.37] Come on and lay with me
   /// [00:35.52] Come on and lie to me   <- Adjacent line
   /// [00:36.50] New line                <- Added line
   /// [00:37.49] Tell me you love me     <- Selected line
   /// [00:39.12] Say I'm the only one
-  /// 
+  ///
   /// In the case like the one above, the selected line index will be updated to the original
   /// selected line index plus one, to ensure the selected line remains selected after the new
   /// line is added.
-  /// 
+  ///
   /// If it happens that `addSpacer` is set to `true`, then the new line will only contain its
   /// corresponding timestamp without any lyrics, as shown below:
   ///
@@ -330,36 +462,36 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   }
 
   /// Remove a line either above or below the selected line
-  /// 
+  ///
   /// Both the timestamp and lyrics of the line to be removed will be deleted from the parsed lyrics.
-  /// 
+  ///
   /// Parameters:
   /// - [removeBelow] defines if the line below the selected line should be removed. Default value is `false`
   /// - [thisLine] defines if the selected line should be removed. Default value is `false`
-  /// 
+  ///
   /// Returns:
   /// - `0` if the line was removed successfully
   /// - `-1` if either the parsed lyrics or selected line are `null`
   /// - `-2` if the operation can't be performed, e.g., trying to remove below the last line
-  /// 
+  ///
   /// Detailed example:
-  /// 
+  ///
   /// The function will remove the line above the selected line as shown below:
-  /// 
+  ///
   /// ```txt
   /// [00:33.37] Come on and lay with me
   /// [00:35.52] Come on and lie to me   <- Adjacent line, the line will be removed
   /// [00:37.49] Tell me you love me     <- Selected line
   /// [00:39.12] Say I'm the only one
-  /// 
+  ///
   /// Since the line above the selected line will be removed, the selected line will be moved up
   /// to replace the removed line, resulting in the following:
-  /// 
+  ///
   /// [00:33.37] Come on and lay with me
   /// [00:37.49] Tell me you love me     <- This was the adjacent line, now it's the selected line
   /// [00:39.12] Say I'm the only one
   /// ```
-  /// 
+  ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
   int removeLine({bool removeBelow = false, bool thisLine = false}) {
