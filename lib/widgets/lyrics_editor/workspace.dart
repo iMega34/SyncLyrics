@@ -17,10 +17,18 @@ class Workspace extends ConsumerWidget {
 
   /// Handles the tap event outside the workspace.
   /// 
-  /// Deselects the currently selected line and validates the synced lyrics.
+  /// Deselects the selected line and validates the synced lyrics.
+  /// 
+  /// Microtask is used to ensure that the `workspaceProvider` is updated before
+  /// the `deselectLine` and `validateSyncedLyrics` functions are called.
+  /// 
+  /// Parameters:
+  /// - [ref] is the [WidgetRef] used to read the `workspaceProvider`
   void _onTapOutside(WidgetRef ref) {
-    ref.read(workspaceProvider.notifier).deselectLine();
-    ref.read(workspaceProvider.notifier).validateSyncedLyrics();
+    Future.microtask(() {
+      ref.read(workspaceProvider.notifier).deselectLine();
+      ref.read(workspaceProvider.notifier).validateSyncedLyrics();
+    });
   }
 
   @override
@@ -52,10 +60,10 @@ class Workspace extends ConsumerWidget {
             itemCount: parsedLyrics.length,
             itemBuilder: (_, index) => LyricsLine(
               key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
-              index: index,
               timestamp: parsedLyrics[index].keys.first,
-              lyrics: parsedLyrics[index].values.first
-            ),
+              content: parsedLyrics[index].values.first,
+              index: index,
+            )
           ),
         ),
       ),
