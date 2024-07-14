@@ -89,7 +89,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     onPressed: () {
                       // Load the synchronized lyrics into the `workspaceProvider`
                       final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics!;
-                      ref.read(workspaceProvider.notifier).loadLyrics(parsedLyrics);
+                      ref.read(workspaceProvider.notifier).updateSyncedLyrics(parsedLyrics);
                       Navigator.pop(context);
                       AppRouter.changeScreen(context, 1);
                     }
