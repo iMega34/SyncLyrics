@@ -84,7 +84,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Parameters:
   /// - [parsedLyrics] are the parsed synced lyrics of the track as a [List]
   ///   of [Map]s with its timestamp and lyrics as [String]s.
-  void updateSyncedLyrics(List<Map<String, String>> parsedLyrics)
+  void initializeSyncedLyrics(List<Map<String, String>> parsedLyrics)
     => state = state.copyWith(parsedLyrics: parsedLyrics);
 
   /// Select a line in the workspace
@@ -98,6 +98,20 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Clears the state from the selected line
   void deselectLine() => state = state.clearLine();
+
+  /// Save the content of a line in the workspace
+  /// 
+  /// Parameters:
+  /// - [index] is the index of the line
+  /// - [lineContent] is the content of the line as a [Map] with its timestamp and lyrics
+  ///    as [String]s
+  void saveLine(int index, Map<String, String> lineContent) {
+    // Assign the new content to the line in the parsed lyrics
+    final parsedLyrics = state.parsedLyrics!;
+    parsedLyrics[index] = lineContent;
+
+    state = state.copyWith(parsedLyrics: parsedLyrics);
+  }
 
   /// Parse a timestamp from a string
   ///
