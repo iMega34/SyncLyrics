@@ -13,6 +13,7 @@ class WorkspaceState {
   ///    of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line
   /// - [selectedLines] are the indices of the selected lines
+  /// - [conflictingLines] are the indices of the conflicting lines
   /// - [multilineMode] is whether the multiline mode is enabled
   const WorkspaceState({
     this.track,
@@ -20,6 +21,7 @@ class WorkspaceState {
     this.parsedLyrics,
     this.selectedLine,
     this.selectedLines,
+    this.conflictingLines,
     this.multilineMode
   });
 
@@ -29,6 +31,7 @@ class WorkspaceState {
   final List<Map<String, String>>? parsedLyrics;
   final int? selectedLine;
   final List<int>? selectedLines;
+  final List<int>? conflictingLines;
   final bool? multilineMode;
 
   /// Copy the current state with new values
@@ -40,6 +43,7 @@ class WorkspaceState {
   ///   of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line as an [int]
   /// - [selectedLines] are the indices of the selected lines as a [List] of [int]s
+  /// - [conflictingLines] are the indices of the conflicting lines as a [List] of [int]s
   /// - [multilineMode] is whether the multiline mode is enabled as a [bool]
   WorkspaceState copyWith({
     String? track,
@@ -47,6 +51,7 @@ class WorkspaceState {
     List<Map<String, String>>? parsedLyrics,
     int? selectedLine,
     List<int>? selectedLines,
+    List<int>? conflictingLines,
     bool? multilineMode
   }) => WorkspaceState(
     track: track ?? this.track,
@@ -54,6 +59,7 @@ class WorkspaceState {
     parsedLyrics: parsedLyrics ?? this.parsedLyrics,
     selectedLine: selectedLine ?? this.selectedLine,
     selectedLines: selectedLines ?? this.selectedLines,
+    conflictingLines: conflictingLines ?? this.conflictingLines,
     multilineMode: multilineMode ?? this.multilineMode
   );
 
@@ -69,6 +75,7 @@ class WorkspaceState {
     parsedLyrics: parsedLyrics,
     selectedLine: null,
     selectedLines: selectedLines,
+    conflictingLines: conflictingLines,
     multilineMode: multilineMode
   );
 }
@@ -244,14 +251,31 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       return (statusCode: -1, duplicatesFound: {});
     }
 
-    // Store indices of the lines with their corresponding timestamps if duplicates are found
-    final Map<String, int> frequencies = {};
-    final Map<int, String> duplicatesFound = {};
+    // Map for storing the occurrences of the timestamps
+    final Map<String, List<int>> occurrences = {};
     for (final line in state.parsedLyrics!.indexed) {
-      final (timestamp, content) = line.$2.entries.first.record;
-      frequencies[timestamp] = (frequencies[timestamp] ?? 0) + 1;
-      if (frequencies[timestamp]! > 1) duplicatesFound[line.$1] = "$timestamp $content";
+      // Get the timestamp and content of the line, and add the index to the frequencies map
+      final timestamp = line.$2.entries.first.key;
+
+      // Add the index to the list of the timestamp occurrences
+      if (occurrences.containsKey(timestamp)) {
+        occurrences[timestamp]!.add(line.$1);
+        continue;
+      }
+
+      // Otherwise, create a new list with the index
+      occurrences[timestamp] = [line.$1];
     }
+
+    // Filter the occurrences to get only the duplicates
+    final duplicatesFound = Map<int, String>.fromEntries(occurrences.entries
+      .where((entry) => entry.value.length > 1)
+      .expand((entry) => entry.value.map((idx) {
+        final timestamp = entry.key;
+        final content = state.parsedLyrics![idx][timestamp]!;
+        return MapEntry(idx, "$timestamp $content");
+      })
+    ));
 
     return (statusCode: duplicatesFound.isNotEmpty.toInt(), duplicatesFound: duplicatesFound);
   }
@@ -320,7 +344,12 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     final (statusCode: statusCode1, :duplicatesFound) = findDuplicates();
     final (statusCode: statusCode2, :unorderedLines) = checkChronologicalOrder();
 
-    return true;
+    if (statusCode1 == 0 && statusCode2 == 0) return true;
+
+    final conflictingLines = {...duplicatesFound.keys, ...unorderedLines.keys}.toList();
+    state = state.copyWith(conflictingLines: conflictingLines);
+
+    return false;
   }
 
   /// Add a new line either above or below the selected line
