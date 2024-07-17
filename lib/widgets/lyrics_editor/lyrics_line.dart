@@ -52,20 +52,20 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     super.dispose();
   }
 
-  /// Get the width of the timestamp text
+  /// Get the width of a text
   /// 
   /// Parameters:
-  /// - [context] is the build context
+  /// - [text] is the text to measure
   /// 
   /// Returns:
   /// - The width of the text as a [double]
-  double _getTimestampTextWidth(BuildContext context) {
+  double _getTextWidth(String text) {
     // Return 0 if the text is empty
-    if (_timestampController.text.isEmpty) return 0;
+    if (text.isEmpty) return 0;
 
     // Create a text painter to measure the width of the text
     final textPainter = TextPainter(
-      text: TextSpan(text: _timestampController.text),
+      text: TextSpan(text: text),
       textDirection: TextDirection.ltr,
       maxLines: 1
     )..layout(maxWidth: double.infinity);
@@ -93,7 +93,8 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     final selectedColor = theme.extension<CustomAppTheme>()!.selected;
     final selectedLine = ref.watch(workspaceProvider).selectedLine;
     final isSelected = selectedLine == widget.index;
-    final timestampTextWidth = _getTimestampTextWidth(context);
+    final timestampTextWidth = _getTextWidth(_timestampController.text);
+    final lineNumberTextWidth = _getTextWidth("000");
 
     return Focus(
       focusNode: _focusNode,
@@ -111,6 +112,12 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
             ),
             child: Row(
               children: [
+                Container(
+                  width: lineNumberTextWidth,
+                  alignment: Alignment.centerRight,
+                  margin: const EdgeInsets.only(right: 10),
+                  child: Text("${widget.index + 1}", style: theme.textTheme.titleMedium!.copyWith(color: Colors.black54)),
+                ),
                 SizedBox(
                   width: timestampTextWidth,
                   child: TextField(
