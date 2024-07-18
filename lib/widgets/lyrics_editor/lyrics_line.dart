@@ -32,23 +32,18 @@ class LyricsLine extends ConsumerStatefulWidget {
 class _LyricsLineState extends ConsumerState<LyricsLine> {
   late TextEditingController _timestampController;
   late TextEditingController _contentController;
-  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
-    _focusNode.addListener(_handleFocusChange);
     _timestampController = TextEditingController(text: widget.timestamp);
     _contentController = TextEditingController(text: widget.content);
   }
 
   @override
   void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
     _timestampController.dispose();
     _contentController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -73,19 +68,6 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     return textPainter.width * 1.4;
   }
 
-  /// Handle the focus change event
-  /// 
-  /// Selects the line when the text field is focused and saves the line when
-  /// the text field is unfocused.
-  void _handleFocusChange() {
-    _focusNode.hasFocus
-      ? ref.read(workspaceProvider.notifier).selectLine(widget.index)
-      : ref.read(workspaceProvider.notifier).saveLine(
-          widget.index,
-          {_timestampController.text: _contentController.text}
-        );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -96,8 +78,10 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     final timestampTextWidth = _getTextWidth(_timestampController.text);
     final lineNumberTextWidth = _getTextWidth("000");
 
-    return Focus(
-      focusNode: _focusNode,
+    return FocusScope(
+      onFocusChange: (bool hasFocus) => hasFocus
+        ? ref.read(workspaceProvider.notifier).selectLine(widget.index)
+        : ref.read(workspaceProvider.notifier).deselectLine(),
       child: Stack(
         alignment: Alignment.center,
         children: [
