@@ -15,22 +15,6 @@ class Workspace extends ConsumerWidget {
   /// `workspace_provider.dart` file.
   const Workspace({super.key});
 
-  /// Handles the tap event outside the workspace.
-  /// 
-  /// Deselects the selected line and validates the synced lyrics.
-  /// 
-  /// Microtask is used to ensure that the `workspaceProvider` is updated before
-  /// the `deselectLine` and `validateSyncedLyrics` functions are called.
-  /// 
-  /// Parameters:
-  /// - [ref] is the [WidgetRef] used to read the `workspaceProvider`
-  void _onTapOutside(WidgetRef ref) {
-    Future.microtask(() {
-      ref.read(workspaceProvider.notifier).deselectLine();
-      ref.read(workspaceProvider.notifier).validateSyncedLyrics();
-    });
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
@@ -55,7 +39,7 @@ class Workspace extends ConsumerWidget {
       child: ScrollConfiguration(
         behavior: const ScrollBehavior(),
         child: TapRegion(
-          onTapOutside: (_) => _onTapOutside(ref),
+          onTapOutside: (_) => ref.read(workspaceProvider.notifier).deselectLine(),
           child: ListView.builder(
             itemCount: parsedLyrics.length,
             itemBuilder: (_, index) => LyricsLine(
