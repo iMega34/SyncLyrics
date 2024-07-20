@@ -38,17 +38,14 @@ class Workspace extends ConsumerWidget {
     return Expanded(
       child: ScrollConfiguration(
         behavior: const ScrollBehavior(),
-        child: TapRegion(
-          onTapOutside: (_) => ref.read(workspaceProvider.notifier).deselectLine(),
-          child: ListView.builder(
-            itemCount: parsedLyrics.length,
-            itemBuilder: (_, index) => LyricsLine(
-              key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
-              timestamp: parsedLyrics[index].keys.first,
-              content: parsedLyrics[index].values.first,
-              index: index,
-            )
-          ),
+        child: ListView.builder(
+          itemCount: parsedLyrics.length,
+          itemBuilder: (_, index) => LyricsLine(
+            key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
+            timestamp: parsedLyrics[index].keys.first,
+            content: parsedLyrics[index].values.first,
+            index: index,
+          )
         ),
       ),
     );
