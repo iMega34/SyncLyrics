@@ -13,7 +13,8 @@ class WorkspaceState {
   ///    of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line
   /// - [selectedLines] are the indices of the selected lines
-  /// - [conflictingLines] are the indices of the conflicting lines
+  /// - [duplicateLines] are the indices of the duplicate lines
+  /// - [unorderedLines] are the indices of the unordered lines
   /// - [multilineMode] is whether the multiline mode is enabled
   const WorkspaceState({
     this.track,
@@ -21,7 +22,8 @@ class WorkspaceState {
     this.parsedLyrics,
     this.selectedLine,
     this.selectedLines,
-    this.conflictingLines,
+    this.duplicateLines,
+    this.unorderedLines,
     this.multilineMode
   });
 
@@ -31,7 +33,8 @@ class WorkspaceState {
   final List<Map<String, String>>? parsedLyrics;
   final int? selectedLine;
   final List<int>? selectedLines;
-  final List<int>? conflictingLines;
+  final List<int>? duplicateLines;
+  final List<int>? unorderedLines;
   final bool? multilineMode;
 
   /// Copy the current state with new values
@@ -43,7 +46,8 @@ class WorkspaceState {
   ///   of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line as an [int]
   /// - [selectedLines] are the indices of the selected lines as a [List] of [int]s
-  /// - [conflictingLines] are the indices of the conflicting lines as a [List] of [int]s
+  /// - [duplicateLines] are the indices of the duplicate lines as a [List] of [int]s
+  /// - [unorderedLines] are the indices of the unordered lines as a [List] of [int]s
   /// - [multilineMode] is whether the multiline mode is enabled as a [bool]
   WorkspaceState copyWith({
     String? track,
@@ -51,7 +55,8 @@ class WorkspaceState {
     List<Map<String, String>>? parsedLyrics,
     int? selectedLine,
     List<int>? selectedLines,
-    List<int>? conflictingLines,
+    List<int>? duplicateLines,
+    List<int>? unorderedLines,
     bool? multilineMode
   }) => WorkspaceState(
     track: track ?? this.track,
@@ -59,7 +64,8 @@ class WorkspaceState {
     parsedLyrics: parsedLyrics ?? this.parsedLyrics,
     selectedLine: selectedLine ?? this.selectedLine,
     selectedLines: selectedLines ?? this.selectedLines,
-    conflictingLines: conflictingLines ?? this.conflictingLines,
+    duplicateLines: duplicateLines ?? this.duplicateLines,
+    unorderedLines: unorderedLines ?? this.unorderedLines,
     multilineMode: multilineMode ?? this.multilineMode
   );
 
@@ -75,7 +81,8 @@ class WorkspaceState {
     parsedLyrics: parsedLyrics,
     selectedLine: null,
     selectedLines: selectedLines,
-    conflictingLines: conflictingLines,
+    duplicateLines: duplicateLines,
+    unorderedLines: unorderedLines,
     multilineMode: multilineMode
   );
 }
@@ -340,14 +347,26 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     return (statusCode: unorderedLines.isNotEmpty.toInt(), unorderedLines: unorderedLines);
   }
 
+  /// Validate the synchronized lyrics
+  /// 
+  /// This function validates the synchronized lyrics by checking for duplicates and ensuring
+  /// the lines are in chronological order. If any duplicates or unordered lines are found, the
+  /// indices of the lines will be stored in the state for the user to review and correct.
+  /// 
+  /// Returns:
+  /// - `true` if the synchronized lyrics are valid
   bool validateSyncedLyrics() {
     final (statusCode: statusCode1, :duplicatesFound) = findDuplicates();
     final (statusCode: statusCode2, :unorderedLines) = checkChronologicalOrder();
 
+    // Return true if no duplicates or unordered lines are found
     if (statusCode1 == 0 && statusCode2 == 0) return true;
 
-    final conflictingLines = {...duplicatesFound.keys, ...unorderedLines.keys}.toList();
-    state = state.copyWith(conflictingLines: conflictingLines);
+    // Otherwise, update the state with the indices of the duplicate and unordered lines
+    state = state.copyWith(
+      duplicateLines: duplicatesFound.keys.toList(),
+      unorderedLines: unorderedLines.keys.toList()
+    );
 
     return false;
   }
