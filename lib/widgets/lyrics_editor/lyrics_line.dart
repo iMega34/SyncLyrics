@@ -13,6 +13,8 @@ class LyricsLine extends ConsumerStatefulWidget {
   /// 
   /// Parameters:
   /// - [index] is whether the line is selected or not
+  /// - [timestamp] is the timestamp of the line
+  /// - [content] is the lyrics of the line
   const LyricsLine({
     super.key,
     required this.index,
