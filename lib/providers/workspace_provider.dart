@@ -242,7 +242,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///   {"[00:37.49]" : "Tell me you love me"},
   ///   {"[00:39.12]" : "Say I'm the only one"}
   /// ];
-  /// final (statusCode, duplicatesFound) = findDuplicates();
+  /// final (:statusCode, :duplicatesFound) = findDuplicates();
   /// print(statusCode); Output: 1
   /// print(duplicatesFound); // Output: {
   /// //  1 : "[00:35.52] Come on and lie to me",
@@ -261,7 +261,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Map for storing the occurrences of the timestamps
     final Map<String, List<int>> occurrences = {};
     for (final line in state.parsedLyrics!.indexed) {
-      // Get the timestamp and content of the line, and add the index to the frequencies map
+      // Get the timestamp and content of the line, and add the index to the ocurrences map
       final timestamp = line.$2.entries.first.key;
 
       // Add the index to the list of the timestamp occurrences
@@ -316,7 +316,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///   {"[00:36.50]" : "New line"},
   ///   {"[00:39.12]" : "Say I'm the only one"}
   /// ];
-  /// final (statusCode, unorderedLines) = checkChronologicalOrder();
+  /// final (:statusCode, :unorderedLines) = checkChronologicalOrder();
   /// print(statusCode); // Output: 1
   /// print(unorderedLines); // Output: {3 : "[00:36.50] New line"}
   /// ```
