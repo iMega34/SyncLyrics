@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/providers/workspace_provider.dart';
-import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line.dart';
+import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line/lyrics_line.dart';
 
 class Workspace extends ConsumerWidget {
   /// Workspace for displaying and editing synced lyrics, used in the `LyricsEditorScreen`.
