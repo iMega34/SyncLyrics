@@ -46,7 +46,7 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     return FocusScope(
       onFocusChange: (bool hasFocus) => hasFocus
         ? ref.read(workspaceProvider.notifier).selectLine(widget.index)
-        : ref.read(workspaceProvider.notifier).deselectLine(),
+        : null,
       child: Stack(
         alignment: Alignment.center,
         children: [
