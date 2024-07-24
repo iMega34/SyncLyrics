@@ -17,17 +17,23 @@ class LyricsLine extends ConsumerStatefulWidget {
   /// - [index] is whether the line is selected or not
   /// - [timestamp] is the timestamp of the line
   /// - [content] is the lyrics of the line
+  /// - [isDuplicated] is whether the line is a duplicate of another line
+  /// - [isUnordered] is whether the line is out of order
   const LyricsLine({
     super.key,
     required this.index,
     required this.timestamp,
-    required this.content
+    required this.content,
+    required this.isDuplicated,
+    required this.isUnordered,
   });
 
   // Class attributes
   final int index;
   final String timestamp;
   final String content;
+  final bool isDuplicated;
+  final bool isUnordered;
 
   @override
   ConsumerState<LyricsLine> createState() => _LyricsLineState();
