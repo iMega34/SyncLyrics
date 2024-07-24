@@ -19,6 +19,8 @@ class Workspace extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(workspaceProvider).parsedLyrics;
+    final duplicateLines = ref.watch(workspaceProvider).duplicateLines!;
+    final unorderedLines = ref.watch(workspaceProvider).unorderedLines!;
 
     // Display a message if there are no synced lyrics available from the `workspaceProvider`
     if (parsedLyrics == null) {
@@ -42,9 +44,11 @@ class Workspace extends ConsumerWidget {
           itemCount: parsedLyrics.length,
           itemBuilder: (_, index) => LyricsLine(
             key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
+            index: index,
             timestamp: parsedLyrics[index].keys.first,
             content: parsedLyrics[index].values.first,
-            index: index,
+            isDuplicated: duplicateLines.contains(index),
+            isUnordered: unorderedLines.contains(index),
           )
         ),
       ),
