@@ -17,6 +17,7 @@ class Workspace extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print(ref.read(workspaceProvider).selectedLine);
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(workspaceProvider).parsedLyrics;
     final duplicateLines = ref.watch(workspaceProvider).duplicateLines ?? [];
@@ -40,16 +41,19 @@ class Workspace extends ConsumerWidget {
     return Expanded(
       child: ScrollConfiguration(
         behavior: const ScrollBehavior(),
-        child: ListView.builder(
-          itemCount: parsedLyrics.length,
-          itemBuilder: (_, index) => LyricsLine(
-            key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
-            index: index,
-            timestamp: parsedLyrics[index].keys.first,
-            content: parsedLyrics[index].values.first,
-            isDuplicated: duplicateLines.contains(index),
-            isUnordered: unorderedLines.contains(index),
-          )
+        child: TapRegion(
+          onTapOutside: (_) => ref.read(workspaceProvider.notifier).deselectLine(),
+          child: ListView.builder(
+            itemCount: parsedLyrics.length,
+            itemBuilder: (_, index) => LyricsLine(
+              key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
+              index: index,
+              timestamp: parsedLyrics[index].keys.first,
+              content: parsedLyrics[index].values.first,
+              isDuplicated: duplicateLines.contains(index),
+              isUnordered: unorderedLines.contains(index),
+            )
+          ),
         ),
       ),
     );
