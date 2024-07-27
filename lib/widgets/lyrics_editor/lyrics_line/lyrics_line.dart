@@ -49,10 +49,8 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     final selectedLine = ref.watch(workspaceProvider).selectedLine;
     final isSelected = selectedLine == widget.index;
 
-    return FocusScope(
-      onFocusChange: (bool hasFocus) => hasFocus
-        ? ref.read(workspaceProvider.notifier).selectLine(widget.index)
-        : null,
+    return TapRegion(
+      onTapInside: (_) => ref.read(workspaceProvider.notifier).selectLine(widget.index),
       child: Stack(
         alignment: Alignment.center,
         children: [
