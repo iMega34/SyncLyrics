@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync_lyrics/utils/custom_themes.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
 import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line/button_row.dart';
+import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line/index_label.dart';
 import 'package:sync_lyrics/widgets/lyrics_editor/lyrics_line/line_content.dart';
 
 class LyricsLine extends ConsumerStatefulWidget {
@@ -63,9 +64,15 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
               borderRadius: isSelected ? BorderRadius.circular(10) : BorderRadius.circular(0),
               color: isSelected ? selectedColor : backgroundColor
             ),
-            child: LineContent(index: widget.index, timestamp: widget.timestamp, content: widget.content)
+            // Line content
+            child: Row(
+              children: [
+                IndexLabel(index: widget.index, isDuplicated: widget.isDuplicated, isUnordered: widget.isUnordered),
+                LineContent(timestamp: widget.timestamp, content: widget.content),
+              ],
+            )
           ),
-          // Display the button row when the line is selected
+          // Top button row
           Positioned(
             top: 10,
             child: AnimatedSwitcher(
@@ -73,6 +80,7 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
               child: isSelected ? const ButtonRow() : const SizedBox.shrink(),
             ),
           ),
+          // Lower button row
           Positioned(
             bottom: 10,
             child: AnimatedSwitcher(
