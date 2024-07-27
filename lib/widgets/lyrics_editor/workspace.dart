@@ -17,7 +17,6 @@ class Workspace extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print(ref.read(workspaceProvider).selectedLine);
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(workspaceProvider).parsedLyrics;
     final duplicateLines = ref.watch(workspaceProvider).duplicateLines ?? [];
