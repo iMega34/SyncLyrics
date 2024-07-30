@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/routes/router.dart';
+import 'package:sync_lyrics/screens/sidebar.dart';
 import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
 import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
@@ -91,6 +92,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                       final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics!;
                       ref.read(workspaceProvider.notifier).initializeSyncedLyrics(parsedLyrics);
                       Navigator.pop(context);
+                      ref.read(selectedIndexProvider.notifier).state = 1;
                       AppRouter.changeScreen(context, 1);
                     }
                   ),
