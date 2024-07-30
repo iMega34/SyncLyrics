@@ -10,12 +10,20 @@ class NeumorphicTextField extends StatelessWidget {
   /// - [label] is the label for the text field
   /// - [controller] is the controller for the text field
   /// - [margin] is the margin for the text field
-  const NeumorphicTextField({super.key, required this.label, required this.controller, this.margin});
+  /// - [onChanged] is the function to call when the text field changes
+  const NeumorphicTextField({
+    super.key,
+    required this.label,
+    required this.controller,
+    this.margin,
+    this.onChanged
+  });
 
   // Class attributes
   final String label;
   final TextEditingController controller;
   final EdgeInsets? margin;
+  final void Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +54,7 @@ class NeumorphicTextField extends StatelessWidget {
           floatingLabelBehavior: FloatingLabelBehavior.never,
           border: const OutlineInputBorder(borderSide: BorderSide.none),
         ),
+        onChanged: onChanged,
       ),
     );
   }
