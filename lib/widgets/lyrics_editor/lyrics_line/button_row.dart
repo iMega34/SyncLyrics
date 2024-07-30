@@ -25,13 +25,15 @@ class ButtonRow extends ConsumerWidget {
   /// - [context] is the current context
   /// - [statusCode] is the status code
   /// - [message] is the message to display
-  void handleStatusCode(BuildContext context, int statusCode, {String message = "Error"}) {
+  void _handleStatusCode(BuildContext context, int statusCode, {String message = "Error"}) {
     switch (statusCode) {
+      case 0:
+        break;
       case -1:
         showCustomSnackBar(
           context,
           type: SnackBarType.error,
-          title: "Selection Error",
+          title: "Selection error",
           message: "Either the selected line or the lyrics info is empty"
         );
         break;
@@ -39,7 +41,7 @@ class ButtonRow extends ConsumerWidget {
         showCustomSnackBar(
           context,
           type: SnackBarType.error,
-          title: "Operation Error",
+          title: "Operation error",
           message: message
         );
         break;
@@ -59,7 +61,7 @@ class ButtonRow extends ConsumerWidget {
           tooltipText: lowerRow ? "Move line down" : "Move line up",
           onPressed: () {
             final statusCode = ref.read(workspaceProvider.notifier).moveLine(moveDown: lowerRow);
-            handleStatusCode(context, statusCode, message: lowerRow ? "Can't move line down" : "Can't move line up");
+            _handleStatusCode(context, statusCode, message: lowerRow ? "Can't move line down" : "Can't move line up");
           }
         ),
         // Add space above or below
@@ -70,7 +72,7 @@ class ButtonRow extends ConsumerWidget {
           tooltipText: lowerRow ? "Add space below" : "Add space above",
           onPressed: () {
             final statusCode = ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow, addSpacer: true);
-            handleStatusCode(context, statusCode);
+            _handleStatusCode(context, statusCode);
           }
         ),
         // Add new line above or below
@@ -81,7 +83,7 @@ class ButtonRow extends ConsumerWidget {
           tooltipText: lowerRow ? "Add new line below" : "Add new line above",
           onPressed: () {
             final statusCode = ref.read(workspaceProvider.notifier).addLine(addBelow: lowerRow);
-            handleStatusCode(context, statusCode);
+            _handleStatusCode(context, statusCode);
           }
         ),
         // Remove line above or below
@@ -92,7 +94,7 @@ class ButtonRow extends ConsumerWidget {
           tooltipText: lowerRow ? "Remove line below" : "Remove line above",
           onPressed: () {
             final statusCode = ref.read(workspaceProvider.notifier).removeLine(removeBelow: lowerRow);
-            handleStatusCode(context, statusCode, message: lowerRow ? "Can't remove line below" : "Can't remove line above");
+            _handleStatusCode(context, statusCode, message: lowerRow ? "Can't remove line below" : "Can't remove line above");
           }
         )
       ],
