@@ -13,18 +13,31 @@ class MusixmatchResultsState {
   /// State for the Musixmatch results provider
   /// 
   /// Parameters:
+  /// - [track] is the track name to search for
+  /// - [artist] is the artist name to search for
   /// - [results] is the list of results from the search
-  MusixmatchResultsState({this.results});
+  MusixmatchResultsState({this.track, this.artist, this.results});
 
   // Class attributes
+  final String? track;
+  final String? artist;
   final List<MusixmatchResult>? results;
 
   /// Copy the current state with new values
   /// 
   /// Parameters:
+  /// - [track] is the track name to search for
+  /// - [artist] is the artist name to search for
   /// - [results] is the list of results from the search
-  MusixmatchResultsState copyWith({List<MusixmatchResult>? results})
-    => MusixmatchResultsState(results: results ?? this.results);
+  MusixmatchResultsState copyWith({
+    String? track,
+    String? artist,
+    List<MusixmatchResult>? results
+  }) => MusixmatchResultsState(
+    track: track ?? this.track,
+    artist: artist ?? this.artist,
+    results: results ?? this.results
+  );
 }
 
 class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
@@ -35,17 +48,41 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// The initial state is an empty state, with no  results
   MusixmatchResultsNotifier() : super(MusixmatchResultsState());
 
+  /// Set onto the state the track name to search for
+  /// 
+  /// Parameters:
+  /// - [track] is the track name to search for
+  void setTrack(String track) => state = state.copyWith(track: track);
+
+  /// Set onto the state the artist name to search for
+  /// 
+  /// Parameters:
+  /// - [artist] is the artist name to search for
+  void setArtist(String artist) => state = state.copyWith(artist: artist);
+
   /// Search for tracks using the Musixmatch API
   /// 
   /// The results are stored in the state as a [List] of [Map]s with the track, artist,
   /// album and Musixmatch track ID as [String]s
   /// 
-  /// Parameters:
-  /// - [qTrack] is the track name to search for
-  /// - [qArtist] is the artist name to search for
-  Future<void> searchTracks(String qTrack, String qArtist) async {
+  /// Returns:
+  /// - `statusCode` representing if the search was successful or not as an [int]
+  /// 
+  /// Status codes:
+  /// - `0` if the search was successful. The results are stored in the state
+  /// - `-1` if the track or artist are null. No artist or track to search for
+  /// - `-2` if no results were found. The search was unsuccessful
+  Future<int> searchTracks() async {
+    final track = state.track;
+    final artist = state.artist;
+
+    // If the track or artist are null, return an error code
+    if (track == null || artist == null) {
+      return -1;
+    }
+
     // Uses the 'track.search' endpoint from the Musixmatch API to search for tracks
-    final String matchTrackURL = Uri.encodeFull("https://api.musixmatch.com/ws/1.1/track.search?apikey=$musixmatchApiKey&q_track=$qTrack&q_artist=$qArtist");
+    final String matchTrackURL = Uri.encodeFull("https://api.musixmatch.com/ws/1.1/track.search?apikey=$musixmatchApiKey&q_track=$track&q_artist=$artist");
 
     // Fetch the data from the API and decode it as Map<String, dynamic>
     final response = await http.get(Uri.parse(matchTrackURL));
@@ -58,8 +95,14 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
       results.add(musixmatchResult);
     }
 
-    // Update the state with the results from the search
+    // No results found
+    if (results.isEmpty) {
+      return -2;
+    }
+
+    // Update the state with the results from the search and return a success code
     state = state.copyWith(results: results);
+    return 0;
   }
 
   /// Fetch the relevant information retrived from the Musixmatch API
