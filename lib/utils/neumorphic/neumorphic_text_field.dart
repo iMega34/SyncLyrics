@@ -16,7 +16,8 @@ class NeumorphicTextField extends StatelessWidget {
     required this.label,
     required this.controller,
     this.margin,
-    this.onChanged
+    this.onChanged,
+    this.onSubmitted
   });
 
   // Class attributes
@@ -24,6 +25,7 @@ class NeumorphicTextField extends StatelessWidget {
   final TextEditingController controller;
   final EdgeInsets? margin;
   final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +57,7 @@ class NeumorphicTextField extends StatelessWidget {
           border: const OutlineInputBorder(borderSide: BorderSide.none),
         ),
         onChanged: onChanged,
+        onSubmitted: onSubmitted,
       ),
     );
   }
