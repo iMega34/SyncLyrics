@@ -48,12 +48,12 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
         TextField(
           controller: _trackController, 
           style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
-          onEditingComplete: () => notifier.setTrack(_trackController.text),
+          onChanged: (String text) => notifier.setTrack(text),
         ),
         TextField(
           controller: _artistController,
           style: textTheme.bodyLarge,
-          onEditingComplete: () => notifier.setArtist(_artistController.text),
+          onChanged: (String text) => notifier.setArtist(text),
         ),
       ],
     );
