@@ -48,13 +48,13 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// The initial state is an empty state, with no  results
   MusixmatchResultsNotifier() : super(MusixmatchResultsState());
 
-  /// Set onto the state the track name to search for
+  /// Sets the track name to search for
   /// 
   /// Parameters:
   /// - [track] is the track name to search for
   void setTrack(String track) => state = state.copyWith(track: track);
 
-  /// Set onto the state the artist name to search for
+  /// Sets the artist name to search for
   /// 
   /// Parameters:
   /// - [artist] is the artist name to search for
