@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
+import 'package:sync_lyrics/providers/workspace_provider.dart';
 
-class LyricsInfo extends ConsumerWidget {
+class LyricsInfo extends ConsumerStatefulWidget {
   /// Displays the track and artist of the synced lyrics, used in the `LyricsEditorScreen`
   /// 
   /// Listens to the `syncedLyricsProvider` to display the information related to the
@@ -16,14 +16,45 @@ class LyricsInfo extends ConsumerWidget {
   const LyricsInfo({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LyricsInfo> createState() => _LyricsInfoState();
+}
+
+class _LyricsInfoState extends ConsumerState<LyricsInfo> {
+  late TextEditingController _trackController;
+  late TextEditingController _artistController;
+
+  @override
+  void initState() {
+    super.initState();
+    final lyricsInfo = ref.read(workspaceProvider);
+    _trackController = TextEditingController(text: lyricsInfo.track ?? "No track");
+    _artistController = TextEditingController(text: lyricsInfo.artist ?? "No artist");
+  }
+
+  @override
+  void dispose() {
+    _trackController.dispose();
+    _artistController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final lyricsInfo = ref.watch(syncedLyricsProvider);
+    final notifier = ref.read(workspaceProvider.notifier);
     return Column(
       children: [
         // Display the track and artist of the synced lyrics, if available
-        Text(lyricsInfo.track ?? "No track", style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
-        Text(lyricsInfo.artist ?? "No artist", style: textTheme.bodyLarge),
+        TextField(
+          controller: _trackController, 
+          style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+          onEditingComplete: () => notifier.setTrack(_trackController.text),
+        ),
+        TextField(
+          controller: _artistController,
+          style: textTheme.bodyLarge,
+          onEditingComplete: () => notifier.setArtist(_artistController.text),
+        ),
       ],
     );
   }
