@@ -54,6 +54,17 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// The initial state is an empty state, with no synchronized lyrics
   SyncedLyricsNotifier() : super(const SyncedLyricsState());
 
+  /// Get the track information from the state
+  /// 
+  /// Returns:
+  /// - A named [Record] with the following fields:
+  ///   - `track`: A [String] with the name of the track
+  ///   - `artist`: A [String] with the artist of the track
+  ///   - `parsedLyrics`: A [List] of [Map]s with the timestamp and associated lyrics
+  ///      as [String]s
+  ({String? track, String? artist, List<Map<String, String>>? parsedLyrics}) get trackInfo
+    => (track: state.track, artist: state.artist, parsedLyrics: state.parsedLyrics);
+
   /// Load to the state the synchronized lyrics for a given track by parsing the
   /// [String] containing them
   ///
