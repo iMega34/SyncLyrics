@@ -42,17 +42,29 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final notifier = ref.read(workspaceProvider.notifier);
-    return Column(
+    return Column(  
       children: [
         // Display the track and artist of the synced lyrics, if available
         TextField(
           controller: _trackController, 
+          textAlign: TextAlign.center,
           style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(borderSide: BorderSide.none),
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            isDense: true
+          ),
           onChanged: (String text) => notifier.setTrack(text),
         ),
         TextField(
           controller: _artistController,
+          textAlign: TextAlign.center,
           style: textTheme.bodyLarge,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(borderSide: BorderSide.none),
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            isDense: true
+          ),
           onChanged: (String text) => notifier.setArtist(text),
         ),
       ],
