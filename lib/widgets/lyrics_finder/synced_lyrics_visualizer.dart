@@ -27,6 +27,18 @@ class SyncedLyricsVisualizer extends ConsumerStatefulWidget {
 }
 
 class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer> {
+  /// Load the synchronized lyrics to the workspace
+  /// 
+  /// Initializes the `workspaceProvider` with the data stored in the `syncedLyricsProvider`,
+  /// then navigates to the `LyricsEditorScreen` and closes the [SyncedLyricsVisualizer] screen
+  void _loadSyncedLyricsToWorkspace() {
+    final (:track!, :artist!, :parsedLyrics!) = ref.read(syncedLyricsProvider.notifier).trackInfo;
+    ref.read(workspaceProvider.notifier).initializeSyncedLyrics(track, artist, parsedLyrics);
+    ref.read(selectedIndexProvider.notifier).state = 1;
+    AppRouter.changeScreen(context, 1);
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -87,14 +99,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     label: "Edit lyrics",
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    onPressed: () {
-                      // Load the synchronized lyrics into the `workspaceProvider`
-                      final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics!;
-                      ref.read(workspaceProvider.notifier).initializeSyncedLyrics(parsedLyrics);
-                      Navigator.pop(context);
-                      ref.read(selectedIndexProvider.notifier).state = 1;
-                      AppRouter.changeScreen(context, 1);
-                    }
+                    onPressed: _loadSyncedLyricsToWorkspace
                   ),
                   NeumorphicButton(
                     label: "Download LRC file",
