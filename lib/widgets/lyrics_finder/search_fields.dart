@@ -75,6 +75,7 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
             controller: _artistController,
             margin: const EdgeInsets.only(right: 10),
             onChanged: (String text) => notifier.setArtist(text),
+            onSubmitted: (_) => notifier.searchTracks(),
           )
         ),
         Expanded(
@@ -83,6 +84,7 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
             controller: _trackController,
             margin: const EdgeInsets.symmetric(horizontal: 10),
             onChanged: (String text) => notifier.setTrack(text),
+            onSubmitted: (_) => notifier.searchTracks(),
           )
         ),
         NeumorphicButton(
