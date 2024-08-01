@@ -10,7 +10,7 @@ class LineContent extends StatefulWidget {
   /// Allows the user to edit the timestamp and lyrics of the line.
   /// 
   /// Parameters:
-  /// - [timestamp] is the timestamp of the line
+  /// - [timestamp] is the timestamp of the line without square braces
   /// - [content] is the lyrics of the line
   const LineContent({super.key, required this.timestamp, required this.content});
 
@@ -43,7 +43,7 @@ class _LineContentState extends State<LineContent> {
   @override
   void initState() {
     super.initState();
-    final splittedTimestamp = widget.timestamp.substring(1, 9).split(RegExp(r"[.:]"));
+    final splittedTimestamp = widget.timestamp.split(RegExp(r"[.:]"));
     _minutesController = TextEditingController(text: splittedTimestamp[0]);
     _secondsController = TextEditingController(text: splittedTimestamp[1]);
     _millisecondsController = TextEditingController(text: splittedTimestamp[2]);

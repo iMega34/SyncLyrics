@@ -47,7 +47,7 @@ class Workspace extends ConsumerWidget {
             itemBuilder: (_, index) => LyricsLine(
               key: ValueKey("${parsedLyrics[index].keys.first}-${parsedLyrics[index].values.first}"),
               index: index,
-              timestamp: parsedLyrics[index].keys.first,
+              timestamp: parsedLyrics[index].keys.first.substring(1, 9),  // Remove square braces
               content: parsedLyrics[index].values.first,
               isDuplicated: duplicateLines.contains(index),
               isUnordered: unorderedLines.contains(index),
