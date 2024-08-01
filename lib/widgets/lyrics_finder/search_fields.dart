@@ -34,13 +34,14 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
     super.dispose();
   }
 
-  /// Handles error status codes
+  /// Search for tracks with the provided artist and track
   /// 
-  /// Displays a [CustomSnackBar] based on the status code to alert the user of an error
-  /// 
-  /// Parameters:
-  /// - [statusCode] is the status code
-  void _handleStatusCode(int statusCode) {
+  /// If the artist or track name is not provided, a snackbar is shown with the
+  /// corresponding error message.
+  void _searchTracks() async {
+    final statusCode = await ref.read(musixmatchResultsProvider.notifier).searchTracks();
+    // If mounted, handle the status code
+    if (!mounted) return;
     switch (statusCode) {
       case 0:
         break;
@@ -75,7 +76,7 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
             controller: _artistController,
             margin: const EdgeInsets.only(right: 10),
             onChanged: (String text) => notifier.setArtist(text),
-            onSubmitted: (_) => notifier.searchTracks(),
+            onSubmitted: (_) => _searchTracks(),
           )
         ),
         Expanded(
@@ -84,17 +85,14 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
             controller: _trackController,
             margin: const EdgeInsets.symmetric(horizontal: 10),
             onChanged: (String text) => notifier.setTrack(text),
-            onSubmitted: (_) => notifier.searchTracks(),
+            onSubmitted: (_) => _searchTracks(),
           )
         ),
         NeumorphicButton(
           label: "Search",
           margin: const EdgeInsets.only(left: 10),
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-          onPressed: () async {
-            final statusCode = await notifier.searchTracks();
-            _handleStatusCode(statusCode);
-          }
+          onPressed: _searchTracks
         )
       ],
     );
