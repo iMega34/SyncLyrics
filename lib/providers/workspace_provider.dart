@@ -96,10 +96,24 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// whenever a change happens.
   ///
   /// Parameters:
+  /// - [track] is the name of the track as a [String]
+  /// - [artist] is the artist of the track as a [String]
   /// - [parsedLyrics] are the parsed synced lyrics of the track as a [List]
   ///   of [Map]s with its timestamp and lyrics as [String]s.
-  void initializeSyncedLyrics(List<Map<String, String>> parsedLyrics)
-    => state = state.copyWith(parsedLyrics: parsedLyrics);
+  void initializeSyncedLyrics(String track, String artist, List<Map<String, String>> parsedLyrics)
+    => state = state.copyWith(track: track, artist: artist, parsedLyrics: parsedLyrics);
+
+  /// Sets the track name displayed in the workspace
+  /// 
+  /// Parameters:
+  /// - [track] is the track name to be displayed
+  void setTrack(String track) => state = state.copyWith(track: track);
+
+  /// Sets the artist name displayed in the workspace
+  /// 
+  /// Parameters:
+  /// - [artist] is the artist name to be displayed
+  void setArtist(String artist) => state = state.copyWith(artist: artist);
 
   /// Select a line in the workspace
   ///
