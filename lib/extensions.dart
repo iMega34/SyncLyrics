@@ -15,6 +15,22 @@ extension MapEntryToRecord<K, V> on MapEntry<K, V> {
 
 /// Extensions for Dart's built-in [String] class.
 extension TextWidth on String {
+  /// Get the width and height of a text when rendered on the screen as a
+  /// named [Record] with keys `width` and `height`.
+  ({double width, double height}) get textSize {
+    // Return 0 if the text is empty
+    if (isEmpty) return (width: 0, height: 0);
+
+    // Create a text painter to measure the text width
+    final textPainter = TextPainter(
+      text: TextSpan(text: this),
+      textDirection: TextDirection.ltr,
+      maxLines: 1
+    )..layout(maxWidth: double.infinity);
+
+    return (width: textPainter.width, height: textPainter.height);
+  }
+
   /// Get the width of a text when rendered on the screen as a [double].
   double get textWidth {
     // Return 0 if the text is empty
@@ -28,5 +44,20 @@ extension TextWidth on String {
     )..layout(maxWidth: double.infinity);
 
     return textPainter.width;
+  }
+
+  /// Get the height of a text when rendered on the screen as a [double].
+  double get textHeight {
+    // Return 0 if the text is empty
+    if (isEmpty) return 0;
+
+    // Create a text painter to measure the text height
+    final textPainter = TextPainter(
+      text: TextSpan(text: this),
+      textDirection: TextDirection.ltr,
+      maxLines: 1
+    )..layout(maxWidth: double.infinity);
+
+    return textPainter.height;
   }
 }
