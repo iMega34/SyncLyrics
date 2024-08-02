@@ -38,6 +38,10 @@ class AppTheme {
           removeLine: Color.fromARGB(255, 219, 110, 102),
           moveLine: Color.fromARGB(255, 117, 174, 221)
         ),
+        ConflictIndicatorsTheme(
+          duplicated: Color.fromARGB(255, 219, 110, 102),
+          unordered: Color.fromARGB(255, 245, 223, 114)
+        ),
         SnackBarTheme(
           success: Color.fromARGB(255, 33, 166, 86),
           warning: Color.fromARGB(255, 239, 108, 0),

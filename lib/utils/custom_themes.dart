@@ -117,6 +117,46 @@ class CustomButtonTheme extends ThemeExtension<CustomButtonTheme> {
   }
 }
 
+class ConflictIndicatorsTheme extends ThemeExtension<ConflictIndicatorsTheme> {
+  /// Extends [ThemeData] to include custom conflict indicator colors
+  /// 
+  /// The custom colors defined are:
+  /// - [duplicated] is the color of the duplicated line indicator
+  /// - [unordered] is the color of the unordered line indicator
+  const ConflictIndicatorsTheme({
+    required this.duplicated,
+    required this.unordered,
+  });
+
+  // Class attributes
+  final Color duplicated;
+  final Color unordered;
+
+  @override
+  ThemeExtension<ConflictIndicatorsTheme> copyWith({
+    Color? duplicated,
+    Color? unordered,
+  }) {
+    // Return a new instance of the class with the new values
+    return ConflictIndicatorsTheme(
+      duplicated: duplicated ?? this.duplicated,
+      unordered: unordered ?? this.unordered,
+    );
+  }
+
+  @override
+  ThemeExtension<ConflictIndicatorsTheme> lerp(ConflictIndicatorsTheme? other, double t) {
+    // If the other object is not of the same type, return the current object
+    if (other is! ConflictIndicatorsTheme) return this;
+
+    // Return a new instance of the class with the interpolated values
+    return ConflictIndicatorsTheme(
+      duplicated: Color.lerp(duplicated, other.duplicated, t)!,
+      unordered: Color.lerp(unordered, other.unordered, t)!,
+    );
+  }
+}
+
 class SnackBarTheme extends ThemeExtension<SnackBarTheme> {
   /// Extends [ThemeData] to include custom snackbar colors
   /// 
