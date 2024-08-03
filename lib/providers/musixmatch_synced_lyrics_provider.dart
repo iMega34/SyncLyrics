@@ -65,11 +65,11 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   ({String? track, String? artist, List<Map<String, String>>? parsedLyrics}) get trackInfo
     => (track: state.track, artist: state.artist, parsedLyrics: state.parsedLyrics);
 
-  /// Load to the state the synchronized lyrics for a given track by parsing the
-  /// [String] containing them
+  /// Loads the synchronized lyrics for a given track into the state by parsing the
+  /// provided lyrics as a [String]
   ///
-  /// The synchronized lyrics are stored in the state as a [List] of [Map]s, being
-  /// the key the timestamp and the value the associated lyrics, both as [String]s
+  /// The synchronized lyrics are stored in the state as a [List] of [Map]s, where
+  /// the key the timestamp and the value the associated lyrics, both as [String]s.
   ///
   /// Parameters:
   /// - [track] is the name of the track
@@ -78,7 +78,9 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   ///
   /// Detailed example:
   ///
-  /// Splits the lyrics by line and removes the last two lines to avoid parsing errors.
+  /// Splits the lyrics by line. Note:
+  /// - The last two lines are removed to avoid parsing errors.
+  /// - The timestamp is stored without the square braces for easier display and editing.
   ///
   /// The Musixmatch API returns the synchronized lyrics as shown below:
   ///
@@ -93,6 +95,28 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   ///                   [Map]s will fail, throwing a `RangeError` (RangeError (end):
   ///                   Invalid value: Only valid value is 0: 10)
   /// ```
+  /// 
+  /// The synchronized lyrics are then mapped to a [List] of [Map]s with the timestamp
+  /// and associated lyrics as [String]s.
+  /// 
+  /// ```dart
+  /// final lyrics = """
+  /// [00:33.37] Come on and lay with me
+  /// [00:35.52] Come on and lie to me
+  /// (...)
+  /// [03:54.12] Tell me you love me (love me)
+  /// [03:56.49] Say I'm the only one (ooh-ooh)
+  /// """;
+  /// 
+  /// loadSyncedLyrics("Lie to Me", "Depeche Mode", lyrics);
+  /// print(state.parsedLyrics); // [
+  /// //  {"00:33.37": "Come on and lay with me"},
+  /// //  {"00:35.52": "Come on and lie to me"},
+  /// //  (...)
+  /// //  {"03:54.12": "Tell me you love me (love me)"},
+  /// //  {"03:56.49": "Say I'm the only one (ooh-ooh)"}
+  /// // ]
+  /// ```
   ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
@@ -100,9 +124,10 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     // Remove the last two lines to avoid parsing errors
     final lines = List<String>.from(lyrics.split("\n"))
       ..removeLast()..removeLast();
-    // Maps the lines to a list of maps with the timestamp and lyrics
+    // Maps the lines to a list of maps with the timestamp without the square braces and
+    // the associated lyrics
     final parsedLyrics = List<Map<String, String>>.from(
-      lines.map((String line) => {line.substring(0, 10) : line.substring(11)})
+      lines.map((String line) => {line.substring(1, 9) : line.substring(11)})
     );
 
     // Store the synchronized lyrics as both a [String] and a [List] of [Map]s, including
