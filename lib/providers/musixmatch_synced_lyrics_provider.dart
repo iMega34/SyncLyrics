@@ -124,8 +124,8 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     // Remove the last two lines to avoid parsing errors
     final lines = List<String>.from(lyrics.split("\n"))
       ..removeLast()..removeLast();
-    // Maps the lines to a list of maps with the timestamp without the square braces and
-    // the associated lyrics
+    // Maps the lines to a list of maps, removing the square brackets from the timestamp
+    // and storing the timestamp and lyrics as strings
     final parsedLyrics = List<Map<String, String>>.from(
       lines.map((String line) => {line.substring(1, 9) : line.substring(11)})
     );
