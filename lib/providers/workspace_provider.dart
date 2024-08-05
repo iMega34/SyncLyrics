@@ -92,8 +92,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Updates the lyrics in the workspace.
   ///
-  /// This function can be used to load the lyrics for the first time or update them
-  /// whenever a change happens.
+  /// This function can be used to load the lyrics for the first time
   ///
   /// Parameters:
   /// - [track] is the name of the track as a [String]
@@ -129,10 +128,42 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Save the content of a line in the workspace
   /// 
+  /// The line to be saved is should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format,
+  /// and the lyrics as a [String]. The content of the line will be updated in its corresponding
+  /// index within the parsed lyrics.
+  /// 
   /// Parameters:
   /// - [index] is the index of the line
   /// - [lineContent] is the content of the line as a [Map] with its timestamp and lyrics
   ///    as [String]s
+  /// 
+  /// Detailed example:
+  /// 
+  /// The function will save the lyrics of a track line by line as shown below:
+  /// 
+  /// ```dart
+  /// final lyrics = [
+  ///   {"[00:33.37]" : "Come on and lay with me"},
+  ///   {"[00:35.52]" : "Come on and lie to me"},
+  ///   {"[00:37.49]" : "Tell me you love me"},
+  ///   {"[00:39.12]" : "Say I'm the only one"}
+  /// ];
+  /// 
+  /// // Save the lyrics line by line
+  /// for (final line in lyrics.indexed) {
+  ///   saveLine(line.$1, line.$2);
+  /// }
+  /// 
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"[00:33.37]" : "Come on and lay with me"},
+  /// //  {"[00:35.52]" : "Come on and lie to me"},
+  /// //  {"[00:37.49]" : "Tell me you love me"},
+  /// //  {"[00:39.12]" : "Say I'm the only one"}
+  /// // ]
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  /// ```
   void saveLine(int index, Map<String, String> lineContent) {
     // Assign the new content to the line in the parsed lyrics
     final parsedLyrics = state.parsedLyrics!;
@@ -143,17 +174,17 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Parse a timestamp from a string
   ///
-  /// The timestamp should be in the '[mm:ss.xx]' format, since the Musixmatch API returns
+  /// The timestamp should be in the 'mm:ss.xx' format, since the Musixmatch API returns
   /// timestamps in this format. However, to ensure compatibility with other sources such as
   /// the user's own LRC files, the function also accepts timestamps in the format of
-  /// '[mm:ss:xx]' as well. For example:
+  /// 'mm:ss:xx' as well. For example:
   ///
   /// ```dart
-  /// final timestamp1 = _parseTimestamp("[03:54.12]");
+  /// final timestamp1 = _parseTimestamp("03:54.12");
   /// print(timestamp1.runtimeType); // Output: Duration
   /// print(timestamp1); // Output: 0:03:54.120000
   ///
-  /// final timestamp2 = _parseTimestamp("[04:12:99"]);
+  /// final timestamp2 = _parseTimestamp("04:12:99");
   /// print(timestamp2.runtimeType); // Output: Duration
   /// print(timestamp2); // Output: 0:04:12.990000
   /// ```
@@ -168,14 +199,14 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// - The parsed timestamp as a [Duration] object
   Duration _parseTimestamp(String timestamp, {bool adjustMilliseconds = true}) {
     // Check if the timestamp is in the correct format
-    final regex = RegExp(r"\[\d{2}:\d{2}[:.]\d{2}\]");
+    final regex = RegExp(r"\d{2}:\d{2}[:.]\d{2}");
     if (!regex.hasMatch(timestamp)) {
-      throw const FormatException("Timestamp should be either in the format of `[mm:ss.xx]` or `[mm:ss:xx]`");
+      throw const FormatException("Timestamp should be either in the format of `mm:ss.xx` or `mm:ss:xx`");
     }
 
     // Split the timestamp into minutes, seconds, and milliseconds and convert them
     // to a [Duration] object.
-    final splittedTimestamp = timestamp.substring(1, 9).split(RegExp(r"[.:]"));
+    final splittedTimestamp = timestamp.split(RegExp(r"[.:]"));
     final parsedTimestamp = Duration(
       minutes: int.parse(splittedTimestamp[0]),
       seconds: int.parse(splittedTimestamp[1]),
