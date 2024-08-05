@@ -124,7 +124,7 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
                 child: Row(
                   children: [
                     IndexLabel(index: widget.index, isDuplicated: widget.isDuplicated, isUnordered: widget.isUnordered),
-                    LineContent(timestamp: widget.timestamp, content: widget.content),
+                    LineContent(index: widget.index, timestamp: widget.timestamp, content: widget.content),
                   ],
                 )
               ),
