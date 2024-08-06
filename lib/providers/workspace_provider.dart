@@ -232,30 +232,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Returns:
   /// - The duration as a [String] in the format of '[mm:ss.xx]'
   String _timestampAsString(Duration timestamp) {
-    // Get the total milliseconds
-    int totalMilliseconds = timestamp.inMilliseconds;
-
-    final minutes = totalMilliseconds ~/ Duration.millisecondsPerMinute;
-    totalMilliseconds = totalMilliseconds.remainder(Duration.millisecondsPerMinute);
-
-    // Add a padding zero when the minutes are less than 10 to ensure the format is '[mm:ss.xx]'
-    final minutesPadding = minutes < 10 ? "0" : "";
-
-    final seconds = totalMilliseconds ~/ Duration.millisecondsPerSecond;
-    totalMilliseconds = totalMilliseconds.remainder(Duration.millisecondsPerSecond);
-
-    // Add a padding zero when the seconds are less than 10 to ensure the format is '[mm:ss.xx]'
-    final secondsPadding = seconds < 10 ? "0" : "";
-
-    // Milliseconds should be in the range of [0, 99] for compatibility with LRC files
-    if (totalMilliseconds >= 100) {
-      totalMilliseconds = totalMilliseconds ~/ 10;
-    }
-
-    // Ensure the milliseconds are padded with a zero when they are less than 10
-    final millisecondsText = totalMilliseconds.toString().padLeft(2, "0");
-
-    return "$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText";
+    final minutes = timestamp.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = timestamp.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final milliseconds = (timestamp.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+    return "$minutes:$seconds:$milliseconds";
   }
 
   /// Find duplicated lines in the parsed lyrics
@@ -456,8 +436,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// selected line index plus one, to ensure the selected line remains selected after the new
   /// line is added.
   ///
-  /// If it happens that `addSpacer` is set to `true`, then the new line will only contain its
-  /// corresponding timestamp without any lyrics, as shown below:
+  /// If `addSpacer` is set to `true`, then the new line will only contain its corresponding
+  /// timestamp without any lyrics, as shown below:
   ///
   /// [00:33.37] Come on and lay with me
   /// [00:35.52] Come on and lie to me   <- Adjacent line
@@ -474,18 +454,26 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       return -1;
     }
 
-    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
-    final adjacentLineIndex = addBelow ? index + 1 : index - 1;
+    // Get the parsed lyrics, selected line index, and the adjacent line index
+    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+
+    // Define conditions for adding the new line above or below the selected line
+    final adjacentLineIndex = addBelow ? selectedLineIndex + 1 : selectedLineIndex - 1;
+    final newLineIndex = addBelow ? selectedLineIndex + 1 : selectedLineIndex;
+    final newSelectedLine = addBelow ? selectedLineIndex : selectedLineIndex + 1;
+    final newLineContent = addSpacer ? "" : "New line";
+    final willAddLineToStart = adjacentLineIndex < 0;
+    final willAddLineToEnd = adjacentLineIndex > parsedLyrics.length - 1;
 
     // Get the timestamps of the selected line and the adjacent line. If the new line index
     // is equal to 0, the timestamp of the adjacent line will be set to '[00:00.00]', and if
     // it's greater than the length of the parsed lyrics, the timestamp of the adjacent line
     // will be set to '[99:59.99]'.
-    final selectedLine = parsedLyrics[index].keys.first;
-    final adjacentLine = adjacentLineIndex == 0
-      ? "[00:00.00]"
-      : adjacentLineIndex >= parsedLyrics.length
-        ? "[99:59.99]"
+    final selectedLine = parsedLyrics[selectedLineIndex].keys.first;
+    final adjacentLine = willAddLineToStart
+      ? "00:00.00"
+      : willAddLineToEnd
+        ? "99:59.99"
         : parsedLyrics[adjacentLineIndex].keys.first;
 
     // Parse the timestamps into a [Duration] object
@@ -495,12 +483,9 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Calculate the average of the timestamps to get the new line's timestamp
     final newLineTimestamp = _timestampAsString((selectedLineTimestamp + adjacentLineTimestamp) ~/ 2);
 
-    // Insert the new line into the parsed lyrics and update the state, the selected line index
-    // will be updated to the original selected line index plus one if the new line is added above
-    // the selected line
-    final element = {newLineTimestamp : addSpacer ? "" : "New line"};
-    parsedLyrics.insert(addBelow ? adjacentLineIndex : adjacentLineIndex + 1, element);
-    state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: addBelow ? null : index + 1);
+    // Insert the new line into the parsed lyrics and update the state with the new parsed lyrics
+    parsedLyrics.insert(newLineIndex, {newLineTimestamp : newLineContent});
+    state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: newSelectedLine);
     return 0;
   }
 
