@@ -255,7 +255,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Ensure the milliseconds are padded with a zero when they are less than 10
     final millisecondsText = totalMilliseconds.toString().padLeft(2, "0");
 
-    return "[$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText]";
+    return "$minutesPadding$minutes:$secondsPadding$seconds.$millisecondsText";
   }
 
   /// Find duplicated lines in the parsed lyrics
@@ -475,18 +475,18 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     }
 
     final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
-    final indexToAdd = addBelow ? index + 1 : index;
+    final adjacentLineIndex = addBelow ? index + 1 : index - 1;
 
     // Get the timestamps of the selected line and the adjacent line. If the new line index
     // is equal to 0, the timestamp of the adjacent line will be set to '[00:00.00]', and if
     // it's greater than the length of the parsed lyrics, the timestamp of the adjacent line
     // will be set to '[99:59.99]'.
     final selectedLine = parsedLyrics[index].keys.first;
-    final adjacentLine = indexToAdd == 0
+    final adjacentLine = adjacentLineIndex == 0
       ? "[00:00.00]"
-      : indexToAdd >= parsedLyrics.length
+      : adjacentLineIndex >= parsedLyrics.length
         ? "[99:59.99]"
-        : parsedLyrics[indexToAdd].keys.first;
+        : parsedLyrics[adjacentLineIndex].keys.first;
 
     // Parse the timestamps into a [Duration] object
     final selectedLineTimestamp = _parseTimestamp(selectedLine);
@@ -498,7 +498,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Insert the new line into the parsed lyrics and update the state, the selected line index
     // will be updated to the original selected line index plus one if the new line is added above
     // the selected line
-    parsedLyrics.insert(indexToAdd, {newLineTimestamp : addSpacer ? "" : "New line"});
+    final element = {newLineTimestamp : addSpacer ? "" : "New line"};
+    parsedLyrics.insert(addBelow ? adjacentLineIndex : adjacentLineIndex + 1, element);
     state = state.copyWith(parsedLyrics: parsedLyrics, selectedLine: addBelow ? null : index + 1);
     return 0;
   }
