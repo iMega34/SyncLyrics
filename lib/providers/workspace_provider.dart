@@ -143,10 +143,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// ```dart
   /// final lyrics = [
-  ///   {"[00:33.37]" : "Come on and lay with me"},
-  ///   {"[00:35.52]" : "Come on and lie to me"},
-  ///   {"[00:37.49]" : "Tell me you love me"},
-  ///   {"[00:39.12]" : "Say I'm the only one"}
+  ///   {"00:33.37" : "Come on and lay with me"},
+  ///   {"00:35.52" : "Come on and lie to me"},
+  ///   {"00:37.49" : "Tell me you love me"},
+  ///   {"00:39.12" : "Say I'm the only one"}
   /// ];
   /// 
   /// // Save the lyrics line by line
@@ -155,15 +155,15 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// }
   /// 
   /// print(state.parsedLyrics); // Output: [
-  /// //  {"[00:33.37]" : "Come on and lay with me"},
-  /// //  {"[00:35.52]" : "Come on and lie to me"},
-  /// //  {"[00:37.49]" : "Tell me you love me"},
-  /// //  {"[00:39.12]" : "Say I'm the only one"}
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
   /// // ]
+  /// ```
   /// 
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  /// ```
   void saveLine(int index, Map<String, String> lineContent) {
     // Assign the new content to the line in the parsed lyrics
     final parsedLyrics = state.parsedLyrics!;
@@ -218,7 +218,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     return parsedTimestamp;
   }
 
-  /// Convert the duration to a [String] in the format of '[mm:ss.xx]' given a [Duration] object
+  /// Convert the duration to a [String] in the format of 'mm:ss.xx' given a [Duration] object
   ///
   /// The returned [String] will represent milliseconds in the range of [0, 99] since
   /// both LRC files and the Musixmatch API handle milliseconds in this range. For example:
@@ -230,7 +230,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// ```
   ///
   /// Returns:
-  /// - The duration as a [String] in the format of '[mm:ss.xx]'
+  /// - The duration as a [String] in the format of 'mm:ss.xx'
   String _timestampAsString(Duration timestamp) {
     final minutes = timestamp.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = timestamp.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -261,17 +261,17 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// ```dart
   /// final parsedLyrics = [
-  ///   {"[00:33.37]" : "Come on and lay with me"},
-  ///   {"[00:35.52]" : "Come on and lie to me"},
-  ///   {"[00:35.52]" : "Come on and lie to me"},
-  ///   {"[00:37.49]" : "Tell me you love me"},
-  ///   {"[00:39.12]" : "Say I'm the only one"}
+  ///   {"00:33.37" : "Come on and lay with me"},
+  ///   {"00:35.52" : "Come on and lie to me"},
+  ///   {"00:35.52" : "Come on and lie to me"},
+  ///   {"00:37.49" : "Tell me you love me"},
+  ///   {"00:39.12" : "Say I'm the only one"}
   /// ];
   /// final (:statusCode, :duplicatesFound) = findDuplicates();
   /// print(statusCode); Output: 1
   /// print(duplicatesFound); // Output: {
-  /// //  1 : "[00:35.52] Come on and lie to me",
-  /// //  2 : "[00:35.52] Come on and lie to me"
+  /// //  1 : "00:35.52 Come on and lie to me",
+  /// //  2 : "00:35.52 Come on and lie to me"
   /// // }
   /// ```
   ///
@@ -335,15 +335,15 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// ```dart
   /// final parsedLyrics = [
-  ///   {"[00:33.37]" : "Come on and lay with me"},
-  ///   {"[00:35.52]" : "Come on and lie to me"},
-  ///   {"[00:37.49]" : "Tell me you love me"},
-  ///   {"[00:36.50]" : "New line"},
-  ///   {"[00:39.12]" : "Say I'm the only one"}
+  ///   {"00:33.37" : "Come on and lay with me"},
+  ///   {"00:35.52" : "Come on and lie to me"},
+  ///   {"00:37.49" : "Tell me you love me"},
+  ///   {"00:36.50" : "New line"},
+  ///   {"00:39.12" : "Say I'm the only one"}
   /// ];
   /// final (:statusCode, :unorderedLines) = checkChronologicalOrder();
   /// print(statusCode); // Output: 1
-  /// print(unorderedLines); // Output: {3 : "[00:36.50] New line"}
+  /// print(unorderedLines); // Output: {3 : "00:36.50 New line"}
   /// ```
   ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
@@ -454,7 +454,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       return -1;
     }
 
-    // Get the parsed lyrics, selected line index, and the adjacent line index
+    // Get the parsed lyrics and index of the selected line
     final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
 
     // Define conditions for adding the new line above or below the selected line
@@ -466,9 +466,9 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     final willAddLineToEnd = adjacentLineIndex > parsedLyrics.length - 1;
 
     // Get the timestamps of the selected line and the adjacent line. If the new line index
-    // is equal to 0, the timestamp of the adjacent line will be set to '[00:00.00]', and if
+    // is equal to 0, the timestamp of the adjacent line will be set to '00:00.00', and if
     // it's greater than the length of the parsed lyrics, the timestamp of the adjacent line
-    // will be set to '[99:59.99]'.
+    // will be set to '99:59.99'.
     final selectedLine = parsedLyrics[selectedLineIndex].keys.first;
     final adjacentLine = willAddLineToStart
       ? "00:00.00"
@@ -533,8 +533,11 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       return -1;
     }
 
-    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
-    final adjacentLineIndex = moveDown ? index + 1 : index - 1;
+    // Get the parsed lyrics and the index of the selected line
+    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+
+    // Define the index of the adjacent line based on the selected line and the direction to move
+    final adjacentLineIndex = moveDown ? selectedLineIndex + 1 : selectedLineIndex - 1;
 
     // Check if index of the line to be swapped is within the bounds of the parsed lyrics
     if (adjacentLineIndex < 0 || adjacentLineIndex >= parsedLyrics.length) {
@@ -542,11 +545,11 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     }
 
     // Get the timestamps and lyrics of both the selected line and the adjacent line
-    final selectedLine = parsedLyrics[index].entries.first;
+    final selectedLine = parsedLyrics[selectedLineIndex].entries.first;
     final adjacentLine = parsedLyrics[adjacentLineIndex].entries.first;
 
     // Swap the lyrics of the selected line and the adjacent line, leaving the timestamps unchanged
-    parsedLyrics[index] = {selectedLine.key : adjacentLine.value};
+    parsedLyrics[selectedLineIndex] = {selectedLine.key : adjacentLine.value};
     parsedLyrics[adjacentLineIndex] = {adjacentLine.key : selectedLine.value};
 
     // Update the state with the new parsed lyrics and the index of the adjacent line
@@ -573,7 +576,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///
   /// ```txt
   /// [00:33.37] Come on and lay with me
-  /// [00:35.52] Come on and lie to me   <- Adjacent line, the line will be removed
+  /// [00:35.52] Come on and lie to me   <- Adjacent line, this line will be removed
   /// [00:37.49] Tell me you love me     <- Selected line
   /// [00:39.12] Say I'm the only one
   ///
@@ -581,7 +584,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// to replace the removed line, resulting in the following:
   ///
   /// [00:33.37] Come on and lay with me
-  /// [00:37.49] Tell me you love me     <- This was the adjacent line, now it's the selected line
+  /// [00:37.49] Tell me you love me     <- The line was removed, and the selected line moved up
   /// [00:39.12] Say I'm the only one
   /// ```
   ///
@@ -593,8 +596,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       return -1;
     }
 
-    final (parsedLyrics, index) = (state.parsedLyrics!, state.selectedLine!);
-    final indexToRemove = thisLine ? index : (removeBelow ? index + 1 : index - 1);
+    // Get the parsed lyrics and the index of the selected line
+    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+
+    // Define the index to remove based on the selected line and the line to remove
+    final indexToRemove = thisLine
+      ? selectedLineIndex 
+      : (removeBelow ? selectedLineIndex + 1 : selectedLineIndex - 1);
 
     // Check if the index to remove is within the bounds of the parsed lyrics
     if (indexToRemove < 0 || indexToRemove >= parsedLyrics.length) {
