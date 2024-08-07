@@ -27,8 +27,8 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
   void initState() {
     super.initState();
     final lyricsInfo = ref.read(workspaceProvider);
-    _trackController = TextEditingController(text: lyricsInfo.track ?? "No track");
-    _artistController = TextEditingController(text: lyricsInfo.artist ?? "No artist");
+    _trackController = TextEditingController(text: lyricsInfo.track);
+    _artistController = TextEditingController(text: lyricsInfo.artist);
   }
 
   @override
@@ -41,32 +41,37 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final lyricsInfo = ref.read(workspaceProvider);
     final notifier = ref.read(workspaceProvider.notifier);
-    return Column(  
+    final trackStyle = textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold);
+    final artistStyle = textTheme.bodyLarge;
+    const decoration = InputDecoration(
+      border: OutlineInputBorder(borderSide: BorderSide.none),
+      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      isDense: true
+    );
+
+    return Column(
       children: [
         // Display the track and artist of the synced lyrics, if available
-        TextField(
-          controller: _trackController, 
-          textAlign: TextAlign.center,
-          style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(borderSide: BorderSide.none),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            isDense: true
-          ),
-          onChanged: (String text) => notifier.setTrack(text),
-        ),
-        TextField(
-          controller: _artistController,
-          textAlign: TextAlign.center,
-          style: textTheme.bodyLarge,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(borderSide: BorderSide.none),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            isDense: true
-          ),
-          onChanged: (String text) => notifier.setArtist(text),
-        ),
+        lyricsInfo.track == null
+          ? Text("No track", style: trackStyle)
+          : TextField(
+              controller: _trackController, 
+              textAlign: TextAlign.center,
+              style: trackStyle,
+              decoration: decoration,
+              onChanged: (String text) => notifier.setTrack(text),
+            ),
+        lyricsInfo.artist == null
+          ? Text("No artist", style: artistStyle)
+          : TextField(
+              controller: _artistController,
+              textAlign: TextAlign.center,
+              style: artistStyle,
+              decoration: decoration,
+              onChanged: (String text) => notifier.setArtist(text),
+            ),
       ],
     );
   }
