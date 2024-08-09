@@ -17,7 +17,7 @@ class LyricsLine extends ConsumerStatefulWidget {
   /// 
   /// Parameters:
   /// - [index] is whether the line is selected or not
-  /// - [timestamp] is the timestamp of the line without square braces
+  /// - [timestamp] is the timestamp of the line without square brackets
   /// - [content] is the lyrics of the line
   /// - [isDuplicated] is whether the line is a duplicate of another line
   /// - [isUnordered] is whether the line is out of order
