@@ -105,7 +105,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
                     label: "Download LRC file",
                     margin: const EdgeInsets.only(left: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    onPressed: notifier.downloadLRCFile
+                    onPressed: notifier.downloadFile
                   )
                 ]
               )
