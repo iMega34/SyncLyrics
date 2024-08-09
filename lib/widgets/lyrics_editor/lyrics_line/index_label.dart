@@ -39,8 +39,8 @@ class IndexLabel extends StatelessWidget {
             Positioned.fill(
               child: Row(
                 children: [
-                  if (isUnordered) Expanded(child: Container(color: conflictIndicatorsColors.unordered)),
                   if (isDuplicated) Expanded(child: Container(color: conflictIndicatorsColors.duplicated)),
+                  if (isUnordered) Expanded(child: Container(color: conflictIndicatorsColors.unordered)),
                 ],
               ),
             ),
