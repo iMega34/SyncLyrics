@@ -60,8 +60,7 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// - A named [Record] with the following fields:
   ///   - `track`: A [String] with the name of the track
   ///   - `artist`: A [String] with the artist of the track
-  ///   - `parsedLyrics`: A [List] of [Map]s with the timestamp and associated lyrics
-  ///      as [String]s
+  ///   - `parsedLyrics`: A [List] of [Map]s with the timestamp and associated lyrics as [String]s
   ({String? track, String? artist, List<Map<String, String>>? parsedLyrics}) get trackInfo
     => (track: state.track, artist: state.artist, parsedLyrics: state.parsedLyrics);
 
@@ -80,7 +79,7 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   ///
   /// Splits the lyrics by line. Note:
   /// - The last two lines are removed to avoid parsing errors.
-  /// - The timestamp is stored without the square braces for easier display and editing.
+  /// - The timestamp is stored without the square brackets for easier display and editing.
   ///
   /// The Musixmatch API returns the synchronized lyrics as shown below:
   ///
@@ -136,13 +135,16 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   }
 
   // TODO: Implement custom default download directory in the app settings
-  /// Download the synchronized lyrics as an LRC file
+  /// Download the synchronized lyrics as a file
   ///
-  /// The LRC file is saved by default in the `Downloads` directory of the device,
+  /// The file is saved by default in the `Downloads` directory of the device,
   /// however, the user can select the directory where the file will be saved.
+  /// 
+  /// Parameters:
+  /// - [asTxtFile] is a flag to save the LRC file as a `.txt` file instead of a `.lrc` file
   ///
   /// The file is named as `artist - track.lrc`.
-  void downloadLRCFile() async {
+  void downloadFile({bool asTxtFile = false}) async {
     final initDirectory = (await getDownloadsDirectory())!.path;
     // Get the directory where the user wants to save the LRC file, showing a dialog
     // opened in the default directory
@@ -152,8 +154,11 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
       lockParentWindow: true
     );
 
+    // Assign the extension of the file based on the 'asTxtFile' flag
+    final extension = asTxtFile ? "txt" : "lrc";
+
     // Create, write and save the LRC file in the selected directory
-    final file = File("$downloadDirectory/${state.artist} - ${state.track}.lrc");
+    final file = File("$downloadDirectory/${state.artist} - ${state.track}.$extension");
     await file.writeAsString(state.rawSyncedLyrics!);
   }
 }
