@@ -90,6 +90,54 @@ class WorkspaceState {
 class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   WorkspaceNotifier() : super(const WorkspaceState());
 
+  /// Get the track information from the state
+  /// 
+  /// Returns:
+  /// - A named [Record] with the following fields:
+  ///   - `track`: A [String] with the name of the track
+  ///   - `artist`: A [String] with the artist of the track
+  ///   - `parsedLyrics`: A [List] of [Map]s with the timestamp and associated lyrics as [String]s
+  ///   - `rawSyncedLyrics`: A [String] with the raw synchronized lyrics
+  ({String? track, String? artist, List<Map<String, String>>? parsedLyrics, String? rawSyncedLyrics}) get trackInfo
+    => (track: state.track, artist: state.artist, parsedLyrics: state.parsedLyrics, rawSyncedLyrics: rawSyncedLyrics);
+
+  /// Convert the synchronized lyrics to a raw format
+  /// 
+  /// Useful for saving the synchronized lyrics to a file or adding them to a 
+  /// To ensure
+  /// that the lyrics are saved in the correct format, the getter will add square brackets around
+  /// each timestamp and separate each line with a newline character.
+  /// 
+  /// Returns:
+  /// - The synchronized lyrics as a [String]
+  /// 
+  /// Detailed example:
+  /// 
+  /// Suppose the synchronized lyrics are already parsed and stored in the state as shown below:
+  /// 
+  /// ```dart
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
+  /// // ]
+  /// 
+  /// print(rawSyncedLyrics); // Output:
+  /// // '''
+  /// //  [00:33.37] Come on and lay with me
+  /// //  [00:35.52] Come on and lie to me
+  /// //  [00:37.49] Tell me you love me
+  /// //  [00:39.12] Say I'm the only one
+  /// // '''
+  /// ```
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  String? get rawSyncedLyrics => state.parsedLyrics
+    ?.map((Map<String, String> line) => "[${line.keys.first}] ${line.values.first}")
+    .join('\n');
+
   /// Updates the lyrics in the workspace.
   ///
   /// This function can be used to load the lyrics for the first time
@@ -235,7 +283,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     final minutes = timestamp.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = timestamp.inSeconds.remainder(60).toString().padLeft(2, '0');
     final milliseconds = (timestamp.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
-    return "$minutes:$seconds:$milliseconds";
+    return "$minutes:$seconds.$milliseconds";
   }
 
   /// Find duplicated lines in the parsed lyrics
@@ -379,13 +427,15 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// indices of the lines will be stored in the state for the user to review and correct.
   /// 
   /// Returns:
-  /// - `true` if the synchronized lyrics are valid
-  bool validateSyncedLyrics() {
+  /// - `0` if lyrics are validated successfully. No duplicates or unordered lines found
+  /// - `1` if duplicates or unordered lines are found.
+  int validateSyncedLyrics() {
+    int issuesFound;
     final (statusCode: statusCode1, :duplicatesFound) = findDuplicates();
     final (statusCode: statusCode2, :unorderedLines) = checkChronologicalOrder();
 
-    // Return true if no duplicates or unordered lines are found
-    if (statusCode1 == 0 && statusCode2 == 0) return true;
+    // Return 0 if no duplicates or unordered lines are found
+    statusCode1 == 0 && statusCode2 == 0 ? issuesFound = 0 : issuesFound = -1;
 
     // Otherwise, update the state with the indices of the duplicate and unordered lines
     state = state.copyWith(
@@ -393,7 +443,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       unorderedLines: unorderedLines.keys.toList()
     );
 
-    return false;
+    return issuesFound;
   }
 
   /// Add a new line either above or below the selected line
