@@ -176,9 +176,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Save the content of a line in the workspace
   /// 
-  /// The line to be saved is should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format,
+  /// The line to be saved is should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format
   /// and the lyrics as a [String]. The content of the line will be updated in its corresponding
-  /// index within the parsed lyrics.
+  /// index within the parsed lyrics. Note that the index should be within the bounds of the
+  /// parsed lyrics, otherwise the function will return without updating the content.
+  /// 
+  /// To update or replace the entire content of the parsed lyrics, consider using the `saveLines`
+  /// method instead. See the `saveLines` method for more details.
   /// 
   /// Parameters:
   /// - [index] is the index of the line
@@ -187,20 +191,19 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// Detailed example:
   /// 
-  /// The function will save the lyrics of a track line by line as shown below:
+  /// Suppose the parsed lyrics are already stored in the state as shown below:
   /// 
   /// ```dart
-  /// final lyrics = [
-  ///   {"00:33.37" : "Come on and lay with me"},
-  ///   {"00:35.52" : "Come on and lie to me"},
-  ///   {"00:37.49" : "Tell me you love me"},
-  ///   {"00:39.12" : "Say I'm the only one"}
-  /// ];
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
+  /// // ]
   /// 
-  /// // Save the lyrics line by line
-  /// for (final line in lyrics.indexed) {
-  ///   saveLine(line.$1, line.$2);
-  /// }
+  /// final timestamp = "00:37.49";
+  /// final lyrics = "Tell me you love me";
+  /// saveLine(2, {timestamp : lyrics});
   /// 
   /// print(state.parsedLyrics); // Output: [
   /// //  {"00:33.37" : "Come on and lay with me"},
@@ -213,12 +216,55 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
   void saveLine(int index, Map<String, String> lineContent) {
+    // Return if the index is out of bounds
+    if (index >= state.parsedLyrics!.length) return;
+
     // Assign the new content to the line in the parsed lyrics
     final parsedLyrics = state.parsedLyrics!;
     parsedLyrics[index] = lineContent;
 
     state = state.copyWith(parsedLyrics: parsedLyrics);
   }
+
+  /// Save the content of multiple lines in the workspace
+  /// 
+  /// The lines to be saved should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format
+  /// and the lyrics as a [String]. The content of the `parsedLyrics` will be replaced with
+  /// the new content.
+  /// 
+  /// To update a specific line or lines, consider using the `saveLine` method instead. See the
+  /// `saveLine` method for more details.
+  /// 
+  /// Parameters:
+  /// - [parsedLyrics] are the parsed lyrics to be saved as a [List] of [Map]s with the
+  ///   timestamp and lyrics as [String]s
+  /// 
+  /// Detailed example:
+  /// 
+  /// The function will save the lyrics as shown below:
+  /// 
+  /// ```dart
+  /// final lyrics = [
+  ///   {"00:33.37" : "Come on and lay with me"},
+  ///   {"00:35.52" : "Come on and lie to me"},
+  ///   {"00:37.49" : "Tell me you love me"},
+  ///   {"00:39.12" : "Say I'm the only one"}
+  /// ];
+  /// 
+  /// saveLines(lyrics);
+  /// 
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
+  /// // ]
+  /// ```
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  void saveLines(List<Map<String, String>> parsedLyrics)
+    => state = state.copyWith(parsedLyrics: parsedLyrics);
 
   /// Parse a timestamp from a string
   ///
