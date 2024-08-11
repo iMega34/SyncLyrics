@@ -222,7 +222,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     if (index >= state.parsedLyrics!.length) return;
 
     // Assign the new content to the line in the parsed lyrics
-    final List<Map<String, String>> parsedLyrics = List.from(state.parsedLyrics!);
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
     parsedLyrics[index] = lineContent;
 
     state = state.copyWith(parsedLyrics: parsedLyrics);
@@ -273,7 +273,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   void applyChanges() {
     // Get a copy of the current parsed lyrics
-    final List<Map<String, String>> parsedLyrics = List.from(state.parsedLyrics!);
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
 
     // Apply the changes to the parsed lyrics, then clear the _pendingChanges map
     _pendingChanges
@@ -617,7 +617,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     }
 
     // Get the parsed lyrics and index of the selected line
-    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+    final (parsedLyrics, selectedLineIndex) =
+      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
 
     // Define conditions for adding the new line above or below the selected line
     final adjacentLineIndex = addBelow ? selectedLineIndex + 1 : selectedLineIndex - 1;
@@ -696,7 +697,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     }
 
     // Get the parsed lyrics and the index of the selected line
-    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+    final (parsedLyrics, selectedLineIndex) =
+      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
 
     // Define the index of the adjacent line based on the selected line and the direction to move
     final adjacentLineIndex = moveDown ? selectedLineIndex + 1 : selectedLineIndex - 1;
@@ -759,7 +761,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     }
 
     // Get the parsed lyrics and the index of the selected line
-    final (parsedLyrics, selectedLineIndex) = (state.parsedLyrics!, state.selectedLine!);
+    final (parsedLyrics, selectedLineIndex) =
+      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
 
     // Define the index to remove based on the selected line and the line to remove
     final indexToRemove = thisLine
