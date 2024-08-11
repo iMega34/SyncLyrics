@@ -15,7 +15,6 @@ class WorkspaceState {
   /// - [selectedLines] are the indices of the selected lines
   /// - [duplicateLines] are the indices of the duplicate lines
   /// - [unorderedLines] are the indices of the unordered lines
-  /// - [multilineMode] is whether the multiline mode is enabled
   const WorkspaceState({
     this.track,
     this.artist,
@@ -23,8 +22,7 @@ class WorkspaceState {
     this.selectedLine,
     this.selectedLines,
     this.duplicateLines,
-    this.unorderedLines,
-    this.multilineMode
+    this.unorderedLines
   });
 
   // Class attributes
@@ -35,7 +33,6 @@ class WorkspaceState {
   final List<int>? selectedLines;
   final List<int>? duplicateLines;
   final List<int>? unorderedLines;
-  final bool? multilineMode;
 
   /// Copy the current state with new values
   ///
@@ -48,7 +45,6 @@ class WorkspaceState {
   /// - [selectedLines] are the indices of the selected lines as a [List] of [int]s
   /// - [duplicateLines] are the indices of the duplicate lines as a [List] of [int]s
   /// - [unorderedLines] are the indices of the unordered lines as a [List] of [int]s
-  /// - [multilineMode] is whether the multiline mode is enabled as a [bool]
   WorkspaceState copyWith({
     String? track,
     String? artist,
@@ -56,8 +52,7 @@ class WorkspaceState {
     int? selectedLine,
     List<int>? selectedLines,
     List<int>? duplicateLines,
-    List<int>? unorderedLines,
-    bool? multilineMode
+    List<int>? unorderedLines
   }) => WorkspaceState(
     track: track ?? this.track,
     artist: artist ?? this.artist,
@@ -66,7 +61,6 @@ class WorkspaceState {
     selectedLines: selectedLines ?? this.selectedLines,
     duplicateLines: duplicateLines ?? this.duplicateLines,
     unorderedLines: unorderedLines ?? this.unorderedLines,
-    multilineMode: multilineMode ?? this.multilineMode
   );
 
   /// Clear the selected line
@@ -82,13 +76,15 @@ class WorkspaceState {
     selectedLine: null,
     selectedLines: selectedLines,
     duplicateLines: duplicateLines,
-    unorderedLines: unorderedLines,
-    multilineMode: multilineMode
+    unorderedLines: unorderedLines
   );
 }
 
 class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   WorkspaceNotifier() : super(const WorkspaceState());
+
+  /// Private local map for storing the pending changes to the parsed lyrics.
+  final Map<int, Map<String, String>> _pendingChanges = {};
 
   /// Get the track information from the state
   /// 
@@ -103,8 +99,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Convert the synchronized lyrics to a raw format
   /// 
-  /// Useful for saving the synchronized lyrics to a file or adding them to a 
-  /// To ensure
+  /// Useful for saving the synchronized lyrics to a file or adding them to a request body. To ensure
   /// that the lyrics are saved in the correct format, the getter will add square brackets around
   /// each timestamp and separate each line with a newline character.
   /// 
@@ -136,11 +131,16 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   String? get rawSyncedLyrics => state.parsedLyrics
     ?.map((Map<String, String> line) => "[${line.keys.first}] ${line.values.first}")
-    .join('\n');
+    .join('\n')
+    .trim();
 
-  /// Updates the lyrics in the workspace.
+  /// Load the synchronized lyrics to the workspace
   ///
-  /// This function can be used to load the lyrics for the first time
+  /// This function is primarily used to load the synchronized lyrics to the workspace.
+  /// 
+  /// When data is loaded to the workspace, prefere using `registerChange` and `applyChanges` for modifying
+  /// the lyrics, and `setTrack` and `setArtist` for updating the track and artist names, since they are
+  /// designed for mofifying their respective fields in the state.
   ///
   /// Parameters:
   /// - [track] is the name of the track as a [String]
@@ -176,18 +176,19 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
   /// Save the content of a line in the workspace
   /// 
-  /// The line to be saved is should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format
+  /// The line to be saved should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format
   /// and the lyrics as a [String]. The content of the line will be updated in its corresponding
   /// index within the parsed lyrics. Note that the index should be within the bounds of the
-  /// parsed lyrics, otherwise the function will return without updating the content.
+  /// parsed lyrics, otherwise the function will not apply the changes.
   /// 
-  /// To update or replace the entire content of the parsed lyrics, consider using the `saveLines`
-  /// method instead. See the `saveLines` method for more details.
+  /// To apply changes to a line, prefer registering the changes first using the `registerChange`
+  /// method, then apply them using the `applyChanges` method, since this method applies changes
+  /// immediately to the parsed lyrics, which can be state inefficient if not used properly.
   /// 
   /// Parameters:
-  /// - [index] is the index of the line
+  /// - [index] is the index of the line. Must be within the bounds of the parsed lyrics
   /// - [lineContent] is the content of the line as a [Map] with its timestamp and lyrics
-  ///    as [String]s
+  ///    as [String]s. The map should contain exactly one key-value pair.
   /// 
   /// Detailed example:
   /// 
@@ -215,6 +216,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
+  @Deprecated("Use the `registerChange` and `applyChanges` methods instead, as they are more state efficient")
   void saveLine(int index, Map<String, String> lineContent) {
     // Return if the index is out of bounds
     if (index >= state.parsedLyrics!.length) return;
@@ -226,32 +228,38 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     state = state.copyWith(parsedLyrics: parsedLyrics);
   }
 
-  /// Save the content of multiple lines in the workspace
+  /// Apply the changes to the parsed lyrics
   /// 
-  /// The lines to be saved should have a timestamp in the `mm:ss:xx` or `mm:ss.xx` format
-  /// and the lyrics as a [String]. The content of the `parsedLyrics` will be replaced with
-  /// the new content.
+  /// The changes stored in the `_pendingChanges` map will be applied to the `parsedLyrics` in the
+  /// state, updating the current lines with the new content. Note that only the changes with indices
+  /// within the bounds of the parsed lyrics will be applied; the rest will be ignored without throwing
+  /// an exception.
   /// 
-  /// To update a specific line or lines, consider using the `saveLine` method instead. See the
-  /// `saveLine` method for more details.
+  /// To register a change to a line use the `registerChange` method first. See the `registerChange` method
+  /// for more details.
   /// 
-  /// Parameters:
-  /// - [parsedLyrics] are the parsed lyrics to be saved as a [List] of [Map]s with the
-  ///   timestamp and lyrics as [String]s
+  /// Prefer using this method for applying changes, as it will update all the lines at once, hence being
+  /// state efficient.
   /// 
   /// Detailed example:
   /// 
-  /// The function will save the lyrics as shown below:
+  /// Suppose the parsed lyrics are already stored in the state but with mistakes in the content as shown below:
   /// 
   /// ```dart
-  /// final lyrics = [
-  ///   {"00:33.37" : "Come on and lay with me"},
-  ///   {"00:35.52" : "Come on and lie to me"},
-  ///   {"00:37.49" : "Tell me you love me"},
-  ///   {"00:39.12" : "Say I'm the only one"}
-  /// ];
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on"},
+  /// //  {"00:35.52" : "Come on to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "I'm the only one"}
+  /// // ]
   /// 
-  /// saveLines(lyrics);
+  /// // Register the changes to the lines
+  /// registerChange(0, "00:33.37", "Come on and lay with me");
+  /// registerChange(1, "00:35.52", "Come on and lie to me");
+  /// registerChange(3, "00:39.12", "Say I'm the only one");
+  /// 
+  /// // Save the changes to the parsed lyrics
+  /// saveLines();
   /// 
   /// print(state.parsedLyrics); // Output: [
   /// //  {"00:33.37" : "Come on and lay with me"},
@@ -263,8 +271,66 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  void saveLines(List<Map<String, String>> parsedLyrics)
-    => state = state.copyWith(parsedLyrics: parsedLyrics);
+  void applyChanges() {
+    // Get a copy of the current parsed lyrics
+    final parsedLyrics = state.parsedLyrics!;
+
+    // Apply the changes to the parsed lyrics, then clear the _pendingChanges map
+    _pendingChanges
+      ..forEach((index, line) { if (index < parsedLyrics.length) parsedLyrics[index] = line; })
+      ..clear();
+
+    // Update the state with the new parsed lyrics
+    state = state.copyWith(parsedLyrics: parsedLyrics);
+  }
+
+  /// Register a change to a line in the workspace
+  /// 
+  /// The change will be stored in the `_pendingChanges` map until the `applyChanges` method is called, therefore,
+  /// changes will not be applied immediately. The changes registered are in the {timestamp : content} format, so
+  /// the content of the line is ready to be updated in the `parsedLyrics` in the state. See the `applyChanges`
+  /// method for more details.
+  /// 
+  /// Prefer using this method for registering changes, as it will allow multiple changes to be registered
+  /// before applying them, hence being state efficient.
+  /// 
+  /// Parameters:
+  /// - [index] is the index of the line
+  /// - [timestamp] is the timestamp of the line as a [String]
+  /// - [content] is the content of the line as a [String]
+  /// 
+  /// Detailed example:
+  /// 
+  /// Suppose the parsed lyrics are already stored in state but with mistakes in the content as shown below:
+  /// 
+  /// ```dart
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on"},
+  /// //  {"00:35.52" : "Come on to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "I'm the only one"}
+  /// // ]
+  /// 
+  /// // Register the changes to the lines
+  /// registerChange(0, "00:33.37", "Come on and lay with me");
+  /// registerChange(1, "00:35.52", "Come on and lie to me");
+  /// registerChange(3, "00:39.12", "Say I'm the only one");
+  /// 
+  /// // Save the changes to the parsed lyrics
+  /// applyChanges();
+  /// 
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
+  /// // ]
+  /// ```
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  void registerChange(int index, String timestamp, String content)
+    => _pendingChanges[index] = {timestamp : content};
 
   /// Parse a timestamp from a string
   ///
