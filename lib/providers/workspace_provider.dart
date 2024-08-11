@@ -222,7 +222,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     if (index >= state.parsedLyrics!.length) return;
 
     // Assign the new content to the line in the parsed lyrics
-    final parsedLyrics = state.parsedLyrics!;
+    final List<Map<String, String>> parsedLyrics = List.from(state.parsedLyrics!);
     parsedLyrics[index] = lineContent;
 
     state = state.copyWith(parsedLyrics: parsedLyrics);
@@ -273,7 +273,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   void applyChanges() {
     // Get a copy of the current parsed lyrics
-    final parsedLyrics = state.parsedLyrics!;
+    final List<Map<String, String>> parsedLyrics = List.from(state.parsedLyrics!);
 
     // Apply the changes to the parsed lyrics, then clear the _pendingChanges map
     _pendingChanges
