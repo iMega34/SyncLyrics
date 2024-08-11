@@ -36,22 +36,19 @@ class _LineContentState extends ConsumerState<LineContent> {
   late TextEditingController _secondsController;
   late TextEditingController _millisecondsController;
   late TextEditingController _contentController;
+
   final _minutesNode = FocusNode();
   final _secondsNode = FocusNode();
   final _millisecondsNode = FocusNode();
   final _contentNode = FocusNode();
 
   // Focus node for all the text fields
-  final _focusScopeNode = FocusScopeNode();
   final _focusNode = FocusNode();
   int _focusedNode = 0;
 
   // List of focus nodes for the text fields
   List<FocusNode> _focusNodes = [];
   List<TextEditingController> _controllers = [];
-
-  String _initialTimestamp = "";
-  String _initialContent = "";
 
   @override
   void initState() {
@@ -64,12 +61,14 @@ class _LineContentState extends ConsumerState<LineContent> {
     _focusNodes = [_minutesNode, _secondsNode, _millisecondsNode, _contentNode];
     _controllers = [_minutesController, _secondsController, _millisecondsController, _contentController];
 
-    _initialTimestamp = widget.timestamp;
-    _initialContent = widget.content;
-
     _minutesNode.addListener(() => _formatTimestampPart(_minutesController, _minutesNode));
     _secondsNode.addListener(() => _formatTimestampPart(_secondsController, _secondsNode));
     _millisecondsNode.addListener(() => _formatTimestampPart(_millisecondsController, _millisecondsNode));
+
+    _minutesController.addListener(() => _registerChange());
+    _secondsController.addListener(() => _registerChange());
+    _millisecondsController.addListener(() => _registerChange());
+    _contentController.addListener(() => _registerChange());
   }
 
   @override
@@ -78,13 +77,23 @@ class _LineContentState extends ConsumerState<LineContent> {
     _secondsController.dispose();
     _millisecondsController.dispose();
     _contentController.dispose();
+
     _minutesNode.dispose();
     _secondsNode.dispose();
     _millisecondsNode.dispose();
     _contentNode.dispose();
-    _focusScopeNode.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  /// Register the change in the line
+  /// 
+  /// Call the corresponding method in the `workspaceProvider` to register the change
+  /// in the line after the user has edited the line.
+  void _registerChange() {
+    final timestamp = "${_minutesController.text}:${_secondsController.text}.${_millisecondsController.text}";
+    final content = _contentController.text;
+    ref.read(workspaceProvider.notifier).registerChange(widget.index, timestamp, content);
   }
 
   /// Format the timestamp part
@@ -98,29 +107,6 @@ class _LineContentState extends ConsumerState<LineContent> {
   void _formatTimestampPart(TextEditingController controller, FocusNode node) {
     if (!node.hasFocus) {
       setState(() => controller.text = controller.text.padLeft(2, "0"));
-    }
-  }
-
-  /// Save the line
-  /// 
-  /// Call the corresponding method in the `workspaceProvider` to save the line after
-  /// the text field loses focus, i.e., the user has finished editing the line.
-  /// 
-  /// Parameters:
-  /// - [hasFocus] is a boolean indicating whether the text field has focus
-  void _saveLine(bool hasFocus) {
-    // Return if the text field has focus
-    if (hasFocus) return;
-
-    // Get the current timestamp and content
-    final timestamp = "${_minutesController.text}:${_secondsController.text}:${_millisecondsController.text}";
-    final content = _contentController.text;
-
-    // Only save the line if the timestamp or content has changed
-    if (_initialTimestamp != timestamp || _initialContent != content) {
-      ref.read(workspaceProvider.notifier).saveLine(widget.index, {timestamp : content});
-      _initialTimestamp = timestamp;
-      _initialContent = content;
     }
   }
 
@@ -173,64 +159,60 @@ class _LineContentState extends ConsumerState<LineContent> {
   Widget build(BuildContext context) {
     final timestampPartTextWidth = "00".textWidth * 1.5;
     return Expanded(
-      child: FocusScope(
-        node: _focusScopeNode,
-        onFocusChange: (bool hasFocus) => _saveLine(hasFocus),
-        child: KeyboardListener(
-          focusNode: _focusNode,
-          onKeyEvent: (KeyEvent event) => _handleKey(event),
-          child: Row(
-            children: [
-              // Minutes text field
-              SizedBox(
-                width: timestampPartTextWidth,
-                child: TextField(
-                  focusNode: _minutesNode,
-                  controller: _minutesController,
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  maxLength: 2,
-                  onTap: () => setState(() => _focusedNode = 0),
-                )
-              ),
-              const Text(":"),
-              // Seconds text field
-              SizedBox(
-                width: timestampPartTextWidth,
-                child: TextField(
-                  focusNode: _secondsNode,
-                  controller: _secondsController,
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  maxLength: 2,
-                  onTap: () => setState(() => _focusedNode = 1),
-                )
-              ),
-              const Text(":"),
-              // Milliseconds text field
-              SizedBox(
-                width: timestampPartTextWidth,
-                child: TextField(
-                  focusNode: _millisecondsNode,
-                  controller: _millisecondsController,
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  maxLength: 2,
-                  onTap: () => setState(() => _focusedNode = 2),
-                )
-              ),
-              const SizedBox(width: 5),
-              // Content text field
-              Expanded(
-                child: TextField(
-                  focusNode: _contentNode,
-                  controller: _contentController,
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true),
-                  onTap: () => setState(() => _focusedNode = 3),
-                )
+      child: KeyboardListener(
+        focusNode: _focusNode,
+        onKeyEvent: (KeyEvent event) => _handleKey(event),
+        child: Row(
+          children: [
+            // Minutes text field
+            SizedBox(
+              width: timestampPartTextWidth,
+              child: TextField(
+                focusNode: _minutesNode,
+                controller: _minutesController,
+                decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onTap: () => setState(() => _focusedNode = 0),
+                maxLength: 2,
               )
-            ],
-          ),
+            ),
+            const Text(":"),
+            // Seconds text field
+            SizedBox(
+              width: timestampPartTextWidth,
+              child: TextField(
+                focusNode: _secondsNode,
+                controller: _secondsController,
+                decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                maxLength: 2,
+                onTap: () => setState(() => _focusedNode = 1),
+              )
+            ),
+            const Text(":"),
+            // Milliseconds text field
+            SizedBox(
+              width: timestampPartTextWidth,
+              child: TextField(
+                focusNode: _millisecondsNode,
+                controller: _millisecondsController,
+                decoration: const InputDecoration(border: InputBorder.none, isDense: true, counterText: ""),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                maxLength: 2,
+                onTap: () => setState(() => _focusedNode = 2),
+              )
+            ),
+            const SizedBox(width: 5),
+            // Content text field
+            Expanded(
+              child: TextField(
+                focusNode: _contentNode,
+                controller: _contentController,
+                decoration: const InputDecoration(border: InputBorder.none, isDense: true),
+                onTap: () => setState(() => _focusedNode = 3),
+              )
+            )
+          ],
         ),
       ),
     );
