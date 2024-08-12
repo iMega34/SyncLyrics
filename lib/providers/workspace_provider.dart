@@ -63,6 +63,12 @@ class WorkspaceState {
     unorderedLines: unorderedLines ?? this.unorderedLines,
   );
 
+  /// Clear the state, effectively resetting it
+  /// 
+  /// Returns:
+  /// - A new [WorkspaceState] with all fields set to `null`
+  WorkspaceState clear() => const WorkspaceState();
+
   /// Clear the selected line
   ///
   /// Useful for deselecting a line
@@ -149,6 +155,11 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///   of [Map]s with its timestamp and lyrics as [String]s.
   void initializeSyncedLyrics(String track, String artist, List<Map<String, String>> parsedLyrics)
     => state = state.copyWith(track: track, artist: artist, parsedLyrics: parsedLyrics);
+
+  /// Clear the workspace
+  /// 
+  /// Effectively resets the workspace by setting all fields to `null`
+  void clearWorkspace() => state = state.clear();
 
   /// Sets the track name displayed in the workspace
   /// 
@@ -276,9 +287,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
 
     // Apply the changes to the parsed lyrics, then clear the _pendingChanges map
-    _pendingChanges
-      ..forEach((index, line) { if (index < parsedLyrics.length) parsedLyrics[index] = line; })
-      ..clear();
+    for (final change in _pendingChanges.entries) {
+      final (index, newContent) = change.record;
+      if (index < parsedLyrics.length) {
+        parsedLyrics[index] = newContent;
+      }
+    }
+    _pendingChanges.clear();
 
     // Update the state with the new parsed lyrics
     state = state.copyWith(parsedLyrics: parsedLyrics);
@@ -556,6 +571,55 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     );
 
     return issuesFound;
+  }
+
+  /// Capitalize the parsed lyrics
+  /// 
+  /// This function will capitalize the first letter of each line in the parsed lyrics.
+  /// 
+  /// Returns:
+  /// - `0` if the lyrics were capitalized successfully. The first letter of each line is capitalized
+  /// - `-1` if the parsed lyrics are `null`. No lines to capitalize
+  /// 
+  /// Detailed example:
+  /// 
+  /// ```dart
+  /// final parsedLyrics = [
+  ///  {"00:33.37" : "come on and lay with me"},
+  /// {"00:35.52" : "come on and lie to me"},
+  /// {"00:37.49" : "Tell me you love me"},
+  /// {"00:39.12" : "say I'm the only one"}
+  /// ];
+  /// 
+  /// capitalizeLyrics();
+  /// 
+  /// print(state.parsedLyrics); // Output: [
+  /// //  {"00:33.37" : "Come on and lay with me"},
+  /// //  {"00:35.52" : "Come on and lie to me"},
+  /// //  {"00:37.49" : "Tell me you love me"},
+  /// //  {"00:39.12" : "Say I'm the only one"}
+  /// // ]
+  /// ```
+  /// 
+  /// Track used for testing: "Lie to Me" by Depeche Mode
+  /// Used Musixmatch track ID: 283511245
+  int capitalizeLyrics() {
+    // Check if the parsed lyrics are null
+    if (state.parsedLyrics == null) {
+      return -1;
+    }
+
+    // Get a copy of the current parsed lyrics
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
+
+    // Capitalize the lyrics of the parsed lyrics
+    for (final line in parsedLyrics) {
+      line.values.first.toCapitalized();
+    }
+
+    // Update the state with the capitalized lyrics
+    state = state.copyWith(parsedLyrics: parsedLyrics);
+    return 0;
   }
 
   /// Add a new line either above or below the selected line
