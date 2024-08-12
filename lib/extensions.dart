@@ -7,6 +7,24 @@ extension BoolToInt on bool {
   int toInt() => this ? 1 : 0;
 }
 
+/// Extensions for Dart's built-in [String] class.
+extension StringExtension on String {
+  /// Returns a capitalized version of the string. Returns an empty string if the
+  /// string is empty.
+  String toCapitalized() => isNotEmpty
+    ? "${this[0].toUpperCase()}${substring(1).toLowerCase()}".trim()
+    : "";
+
+  /// Returns a title-cased version of the string. Returns an empty string if the
+  /// string is empty.
+  String toTitleCase() => isNotEmpty
+    ? trim()
+      .split(RegExp(' +'))
+      .map((String str) => str.toCapitalized())
+      .join(' ')
+    : "";
+}
+
 /// Extensions for Dart's built-in [MapEntry] class.
 extension MapEntryToRecord<K, V> on MapEntry<K, V> {
   /// Converts a [MapEntry] into a record for easy value retrieval.
