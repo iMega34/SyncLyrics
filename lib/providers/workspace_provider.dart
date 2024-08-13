@@ -555,7 +555,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// 
   /// Returns:
   /// - `0` if lyrics are validated successfully. No duplicates or unordered lines found
-  /// - `1` if duplicates or unordered lines are found.
+  /// - `-1` if duplicates or unordered lines are found.
   int validateSyncedLyrics() {
     int issuesFound;
     final (statusCode: statusCode1, :duplicatesFound) = findDuplicates();
