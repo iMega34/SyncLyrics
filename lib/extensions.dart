@@ -7,22 +7,21 @@ extension BoolToInt on bool {
   int toInt() => this ? 1 : 0;
 }
 
-/// Extensions for Dart's built-in [String] class.
-extension StringExtension on String {
-  /// Returns a capitalized version of the string. Returns an empty string if the
-  /// string is empty.
-  String toCapitalized() => isNotEmpty
-    ? "${this[0].toUpperCase()}${substring(1).toLowerCase()}".trim()
-    : "";
+/// Extensions for Dart's built-in [Map] class.
+extension MapToRecord<K ,V> on Map<K, V> {
+  /// Get the key-value pair of the map as a [Record]. Note that in maps with
+  /// multiple key-value pairs, only the first key-value pair is returned.
+  /// 
+  /// Prefer using `record` to get all key-value pairs of the map, or use `record` from
+  /// the [MapEntry] extension class to get a single key-value pair.
+  /// 
+  /// See `records` for more details.
+  /// See `record` from the [MapEntry] extension class for more details.
+  (K, V) get record => (keys.first, values.first);
 
-  /// Returns a title-cased version of the string. Returns an empty string if the
-  /// string is empty.
-  String toTitleCase() => isNotEmpty
-    ? trim()
-      .split(RegExp(' +'))
-      .map((String str) => str.toCapitalized())
-      .join(' ')
-    : "";
+  /// Get the key-value pairs of the map as a list of [Record]s. To get a single
+  /// key-value pair, use [record]. See [record] for more details.
+  List<(K, V)> get records => entries.map((entry) => (entry.key, entry.value)).toList();
 }
 
 /// Extensions for Dart's built-in [MapEntry] class.
@@ -32,7 +31,22 @@ extension MapEntryToRecord<K, V> on MapEntry<K, V> {
 }
 
 /// Extensions for Dart's built-in [String] class.
-extension TextWidth on String {
+extension StringExtension on String {
+  /// Returns a capitalized version of the string. Returns an empty string if the
+  /// string is empty.
+  String capitalize() => isNotEmpty
+    ? "${this[0].toUpperCase()}${substring(1).toLowerCase()}".trim()
+    : "";
+
+  /// Returns a title-cased version of the string. Returns an empty string if the
+  /// string is empty.
+  String titleCase() => isNotEmpty
+    ? trim()
+      .split(RegExp(' +'))
+      .map((String str) => str.capitalize())
+      .join(' ')
+    : "";
+
   /// Get the width and height of a text when rendered on the screen as a
   /// named [Record] with keys `width` and `height`.
   ({double width, double height}) get textSize {
