@@ -27,6 +27,13 @@ enum ToolbarActionResult {
 }
 
 class Toolbar extends ConsumerStatefulWidget {
+  /// A toolbar with buttons for performing actions on the workspace
+  /// 
+  /// The toolbar contains buttons for:
+  /// - Downloading the lyrics as a `.txt`
+  /// - Downloading the lyrics as a `.lrc`
+  /// - Validating the lyrics
+  /// - Capitalizing the lyrics
   const Toolbar({super.key});
 
   @override
