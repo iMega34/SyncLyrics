@@ -614,7 +614,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 
     // Capitalize the lyrics of the parsed lyrics
     for (final line in parsedLyrics) {
-      line.values.first.toCapitalized();
+      final timestamp = line.keys.first;
+      line.update(timestamp, (String content) => content.capitalize());
     }
 
     // Update the state with the capitalized lyrics
