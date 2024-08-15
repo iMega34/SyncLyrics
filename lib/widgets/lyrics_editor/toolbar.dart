@@ -9,13 +9,22 @@ import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 import 'package:sync_lyrics/providers/workspace_provider.dart';
 
 /// Defines the result of an action in the toolbar
-/// 
-/// - [cantDownload] indicates that the lyrics can't be downloaded due to duplicates found
-///   or the lyrics are unordered; this is shown as an error
-/// - [issuesFound] indicates that either duplicates, unordered lyrics, or both were found; this
-///   is shown as a warning message
-/// - [success] indicates that the action was successful; this is shown as a success message
-enum ToolbarActionResult { cantDownload, issuesFound, success }
+enum ToolbarActionResult {
+  /// Indicates that the lyrics were downloaded successfully; shown as a success message
+  fileDownloaded,
+  /// Indicates that the lyrics can't be downloaded due to duplicates found or the lyrics are unordered;
+  /// shown as an error
+  cantDownload,
+  /// Indicates that either duplicates, unordered lyrics, or both were found; shown as a warning message
+  issuesFound,
+  /// Indicates that no issues were found in the lyrics; shown as a success message
+  noIssuesFound,
+  /// Indicates that the lyrics were capitalized successfully; shown as a success message
+  lyricsCapitalized,
+  /// Indicates that the lyrics can't be capitalized due to duplicates found or the lyrics are unordered;
+  /// shown as an error
+  cantCapitalize
+}
 
 class Toolbar extends ConsumerStatefulWidget {
   const Toolbar({super.key});
@@ -67,7 +76,7 @@ class _ToolbarState extends ConsumerState<Toolbar> {
       ),
       _ToolbarButton(
         label: "Capitalize",
-        action: () {},
+        action: _capitalizeAction,
         tooltip: "Capitalize the first letter of each line"
       ),
     ];
@@ -76,11 +85,17 @@ class _ToolbarState extends ConsumerState<Toolbar> {
   /// Handles the status code of an action
   /// 
   /// Parameters:
-  /// - [result] is the result of the action
-  /// - [title] is an optional title for the snackbar
-  /// - [message] is an optional message for the snackbar
-  void _handleStatusCode(ToolbarActionResult result, {String title = "Success", String message = "Success"}) {
-    switch (result) {
+  /// - [actionResult] is the result of the action
+  void _handleStatusCode(ToolbarActionResult actionResult) {
+    switch (actionResult) {
+      case ToolbarActionResult.fileDownloaded:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.success,
+          title: "Downloaded",
+          message: "File downloaded successfully",
+        );
+        break;
       case ToolbarActionResult.cantDownload:
         showCustomSnackBar(
           context,
@@ -97,12 +112,28 @@ class _ToolbarState extends ConsumerState<Toolbar> {
           message: "Unordered lyrics or duplicates found, please verify the lyrics",
         );
         break;
-      case ToolbarActionResult.success:
+      case ToolbarActionResult.noIssuesFound:
         showCustomSnackBar(
           context,
           type: SnackBarType.success,
-          title: title,
-          message: message,
+          title: "No issues",
+          message: "No duplicates or unordered lyrics found",
+        );
+        break;
+      case ToolbarActionResult.lyricsCapitalized:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.success,
+          title: "Capitalized",
+          message: "Lyrics capitalized successfully",
+        );
+        break;
+      case ToolbarActionResult.cantCapitalize:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.error,
+          title: "Can't capitalize",
+          message: "Unordered lyrics or duplicates found, please verify the lyrics",
         );
         break;
     }
@@ -130,7 +161,7 @@ class _ToolbarState extends ConsumerState<Toolbar> {
     final (:track!, :artist!, :parsedLyrics!, :rawSyncedLyrics!) = ref.read(workspaceProvider.notifier).trackInfo;
     ref.read(syncedLyricsProvider.notifier).loadSyncedLyrics(track, artist, rawSyncedLyrics);
     ref.read(syncedLyricsProvider.notifier).downloadFile(asTxtFile: asTxtFile);
-    _handleStatusCode(ToolbarActionResult.success, title: "Downloaded", message: "Lyrics downloaded successfully");
+    _handleStatusCode(ToolbarActionResult.fileDownloaded);
   }
 
   /// Validates the lyrics
@@ -149,7 +180,26 @@ class _ToolbarState extends ConsumerState<Toolbar> {
     }
 
     // Otherwise, show a snackbar with a success message
-    _handleStatusCode(ToolbarActionResult.success, title: "No issues", message: "No duplicates or unordered lyrics found");
+    _handleStatusCode(ToolbarActionResult.noIssuesFound);
+  }
+
+  /// Capitalizes the lyrics
+  /// 
+  /// The first letter of each line is capitalized only if the lyrics pass the validation.
+  void _capitalizeAction() {
+    // Apply the changes to the lyrics and validate them
+    ref.read(workspaceProvider.notifier).applyChanges();
+    final statusCode = ref.read(workspaceProvider.notifier).validateSyncedLyrics();
+
+    // If issues are found, show a snackbar with the error message
+    if (statusCode == -1) {
+      _handleStatusCode(ToolbarActionResult.cantCapitalize);
+      return;
+    }
+
+    // Otherwise, capitalize the lyrics and show a success message
+    ref.read(workspaceProvider.notifier).capitalizeLyrics();
+    _handleStatusCode(ToolbarActionResult.lyricsCapitalized);
   }
 
   @override
@@ -170,8 +220,8 @@ class _ToolbarState extends ConsumerState<Toolbar> {
             enabled: areLyricsAvailable,
             onPressed: button.action,
             label: button.label,
-          ),
-        )).toList(),
+          )
+        )).toList()
       )
     );
   }
