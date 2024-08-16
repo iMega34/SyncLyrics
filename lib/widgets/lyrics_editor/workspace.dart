@@ -19,11 +19,11 @@ class Workspace extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final parsedLyrics = ref.watch(workspaceProvider).parsedLyrics;
-    final duplicateLines = ref.watch(workspaceProvider).duplicateLines ?? [];
-    final unorderedLines = ref.watch(workspaceProvider).unorderedLines ?? [];
+    final duplicateLines = ref.watch(workspaceProvider).duplicateLines;
+    final unorderedLines = ref.watch(workspaceProvider).unorderedLines;
 
     // Display a message if there are no synced lyrics available from the `workspaceProvider`
-    if (parsedLyrics == null) {
+    if (parsedLyrics.isEmpty) {
       return Expanded(
         child: Center(child: Column(
           mainAxisSize: MainAxisSize.min,

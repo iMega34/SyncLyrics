@@ -67,7 +67,7 @@ class _LyricsLineState extends ConsumerState<LyricsLine> {
     if (event is! KeyDownEvent) return;
 
     // Get the parsed lyrics length
-    final parsedLyricsLength = ref.read(workspaceProvider).parsedLyrics!.length;
+    final parsedLyricsLength = ref.read(workspaceProvider).parsedLyrics.length;
 
     // Define conditions for selecting the previous or next line
     final isUpArrowPressed = event.logicalKey == LogicalKeyboardKey.arrowUp;

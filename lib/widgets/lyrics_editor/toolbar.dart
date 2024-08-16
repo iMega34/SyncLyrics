@@ -211,7 +211,7 @@ class _ToolbarState extends ConsumerState<Toolbar> {
 
   @override
   Widget build(BuildContext context) {
-    final areLyricsAvailable = ref.watch(workspaceProvider).parsedLyrics != null;
+    final areLyricsAvailable = ref.watch(workspaceProvider).parsedLyrics.isNotEmpty;
     return Neumorphic(
       child: GridView(
         padding: const EdgeInsets.all(10),
