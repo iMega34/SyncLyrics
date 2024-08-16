@@ -9,58 +9,58 @@ class WorkspaceState {
   /// Parameters:
   /// - [track] is the name of the track
   /// - [artist] is the artist of the track
-  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
-  ///    of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line
   /// - [selectedLines] are the indices of the selected lines
   /// - [duplicateLines] are the indices of the duplicate lines
   /// - [unorderedLines] are the indices of the unordered lines
+  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
+  ///    of [Map]s with its timestamp and lyrics as [String]s
   const WorkspaceState({
     this.track,
     this.artist,
-    this.parsedLyrics,
     this.selectedLine,
-    this.selectedLines,
-    this.duplicateLines,
-    this.unorderedLines
+    this.selectedLines = const [],
+    this.duplicateLines = const [],
+    this.unorderedLines = const [],
+    this.parsedLyrics = const []
   });
 
   // Class attributes
   final String? track;
   final String? artist;
-  final List<Map<String, String>>? parsedLyrics;
   final int? selectedLine;
-  final List<int>? selectedLines;
-  final List<int>? duplicateLines;
-  final List<int>? unorderedLines;
+  final List<int> selectedLines;
+  final List<int> duplicateLines;
+  final List<int> unorderedLines;
+  final List<Map<String, String>> parsedLyrics;
 
   /// Copy the current state with new values
   ///
   /// Parameters:
   /// - [track] is the name of the track as a [String]
   /// - [artist] is the artist of the track as a [String]
-  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
-  ///   of [Map]s with its timestamp and lyrics as [String]s
   /// - [selectedLine] is the index of the selected line as an [int]
   /// - [selectedLines] are the indices of the selected lines as a [List] of [int]s
   /// - [duplicateLines] are the indices of the duplicate lines as a [List] of [int]s
   /// - [unorderedLines] are the indices of the unordered lines as a [List] of [int]s
+  /// - [parsedLyrics] are the parsed synchronized lyrics of the track as a [List]
+  ///   of [Map]s with its timestamp and lyrics as [String]s
   WorkspaceState copyWith({
     String? track,
     String? artist,
-    List<Map<String, String>>? parsedLyrics,
     int? selectedLine,
     List<int>? selectedLines,
     List<int>? duplicateLines,
-    List<int>? unorderedLines
+    List<int>? unorderedLines,
+    List<Map<String, String>>? parsedLyrics
   }) => WorkspaceState(
     track: track ?? this.track,
     artist: artist ?? this.artist,
-    parsedLyrics: parsedLyrics ?? this.parsedLyrics,
     selectedLine: selectedLine ?? this.selectedLine,
     selectedLines: selectedLines ?? this.selectedLines,
     duplicateLines: duplicateLines ?? this.duplicateLines,
     unorderedLines: unorderedLines ?? this.unorderedLines,
+    parsedLyrics: parsedLyrics ?? this.parsedLyrics
   );
 
   /// Clear the state, effectively resetting it
@@ -78,11 +78,11 @@ class WorkspaceState {
   WorkspaceState clearLine() => WorkspaceState(
     track: track,
     artist: artist,
-    parsedLyrics: parsedLyrics,
     selectedLine: null,
     selectedLines: selectedLines,
     duplicateLines: duplicateLines,
-    unorderedLines: unorderedLines
+    unorderedLines: unorderedLines,
+    parsedLyrics: parsedLyrics,
   );
 }
 
@@ -136,7 +136,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
   String? get rawSyncedLyrics => state.parsedLyrics
-    ?.map((Map<String, String> line) => "[${line.keys.first}] ${line.values.first}")
+    .map((Map<String, String> line) => "[${line.keys.first}] ${line.values.first}")
     .join('\n')
     .trim();
 
@@ -230,10 +230,10 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   @Deprecated("Use the `registerChange` and `applyChanges` methods instead, as they are more state efficient")
   void saveLine(int index, Map<String, String> lineContent) {
     // Return if the index is out of bounds
-    if (index >= state.parsedLyrics!.length) return;
+    if (index >= state.parsedLyrics.length) return;
 
     // Assign the new content to the line in the parsed lyrics
-    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics);
     parsedLyrics[index] = lineContent;
 
     state = state.copyWith(parsedLyrics: parsedLyrics);
@@ -284,7 +284,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   void applyChanges() {
     // Get a copy of the current parsed lyrics
-    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics);
 
     // Apply the changes to the parsed lyrics, then clear the _pendingChanges map
     for (final change in _pendingChanges.entries) {
@@ -454,13 +454,8 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   ({int statusCode, Map<int, String> duplicatesFound}) findDuplicates() {
     // Check if the parsed lyrics are null
-    if (state.parsedLyrics == null) {
-      return (statusCode: -1, duplicatesFound: {});
-    }
-
-    // Map for storing the occurrences of the timestamps
     final Map<String, List<int>> occurrences = {};
-    for (final line in state.parsedLyrics!.indexed) {
+    for (final line in state.parsedLyrics.indexed) {
       // Get the timestamp and content of the line, and add the index to the ocurrences map
       final timestamp = line.$2.entries.first.key;
 
@@ -479,7 +474,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
       .where((entry) => entry.value.length > 1)
       .expand((entry) => entry.value.map((idx) {
         final timestamp = entry.key;
-        final content = state.parsedLyrics![idx][timestamp]!;
+        final content = state.parsedLyrics[idx][timestamp]!;
         return MapEntry(idx, "$timestamp $content");
       })
     ));
@@ -525,12 +520,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   ({int statusCode, Map<int, String> unorderedLines}) checkChronologicalOrder() {
     // Check if the parsed lyrics are null
-    if (state.parsedLyrics == null) {
-      return (statusCode: -1, unorderedLines: {});
-    }
-
-    // Get the indices of the lines with their corresponding timestamps
-    final timestampIndices = state.parsedLyrics!.indexed
+    final timestampIndices = state.parsedLyrics.indexed
       .map(((int, Map<String, String>) line) => {line.$1 : _parseTimestamp(line.$2.keys.first)})
       .toList();
     // Create a sorted list of the timestamps to compare with the original list
@@ -605,12 +595,7 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   int capitalizeLyrics() {
     // Check if the parsed lyrics are null
-    if (state.parsedLyrics == null) {
-      return -1;
-    }
-
-    // Get a copy of the current parsed lyrics
-    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics!);
+    final parsedLyrics = List<Map<String, String>>.from(state.parsedLyrics);
 
     // Capitalize the lyrics of the parsed lyrics
     for (final line in parsedLyrics) {
@@ -677,13 +662,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   int addLine({bool addBelow = false, bool addSpacer = false}) {
     // Check if the parsed lyrics or selected line is null
-    if (state.parsedLyrics == null || state.selectedLine == null) {
+    if (state.selectedLine == null) {
       return -1;
     }
 
     // Get the parsed lyrics and index of the selected line
     final (parsedLyrics, selectedLineIndex) =
-      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
+      (List<Map<String, String>>.from(state.parsedLyrics), state.selectedLine!);
 
     // Define conditions for adding the new line above or below the selected line
     final adjacentLineIndex = addBelow ? selectedLineIndex + 1 : selectedLineIndex - 1;
@@ -757,13 +742,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   int moveLine({bool moveDown = false}) {
     // Check if the parsed lyrics or selected line is null
-    if (state.parsedLyrics == null || state.selectedLine == null) {
+    if (state.selectedLine == null) {
       return -1;
     }
 
     // Get the parsed lyrics and the index of the selected line
     final (parsedLyrics, selectedLineIndex) =
-      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
+      (List<Map<String, String>>.from(state.parsedLyrics), state.selectedLine!);
 
     // Define the index of the adjacent line based on the selected line and the direction to move
     final adjacentLineIndex = moveDown ? selectedLineIndex + 1 : selectedLineIndex - 1;
@@ -821,13 +806,13 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   /// Used Musixmatch track ID: 283511245
   int removeLine({bool removeBelow = false, bool thisLine = false}) {
     // Check if the parsed lyrics or selected line is null
-    if (state.parsedLyrics == null || state.selectedLine == null) {
+    if (state.selectedLine == null) {
       return -1;
     }
 
     // Get the parsed lyrics and the index of the selected line
     final (parsedLyrics, selectedLineIndex) =
-      (List<Map<String, String>>.from(state.parsedLyrics!), state.selectedLine!);
+      (List<Map<String, String>>.from(state.parsedLyrics), state.selectedLine!);
 
     // Define the index to remove based on the selected line and the line to remove
     final indexToRemove = thisLine
