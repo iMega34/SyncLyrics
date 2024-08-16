@@ -1,9 +1,9 @@
 
 import 'dart:io';
 
-import 'package:process_run/cmd_run.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -183,14 +183,38 @@ final syncedLyricsProvider = StateNotifierProvider<SyncedLyricsNotifier, SyncedL
 /// Returns:
 /// - A stream of synchronized lyrics for the track
 final musixmatchSyncedLyricsStreamProvider = StreamProvider.autoDispose.family<String, String>((ref, trackID) async* {
-  // Execute the Python script to fetch the synchronized lyrics
-  final script = await run("python lib/utils/musixmatch.py $trackID");
-  final output = script[0];
+  // Get the path to the Python script to fetch the synchronized lyrics
+  final scriptPath = await _copyPythonScriptToLocalPath();
 
-  // Check if the Python script was executed successfully
-  if (output.exitCode != 0) throw ("Error executing Python script: ${output.stderr}");
+  // Execute the Python script to fetch the synchronized lyrics
+  final process = await Process.run('python', [scriptPath, trackID]);
+
+  // Log the error returned by the Python script to a file
+  if (process.exitCode != 0) {
+    final file = File("log.txt");
+    file.writeAsStringSync("Error code: ${process.stderr}\n", mode: FileMode.append);
+  }
 
   // Yield the synchronized lyrics from the Python script
-  final syncedLyrcis = output.stdout;
-  yield syncedLyrcis;
+  final syncedLyrics = process.stdout.toString();
+  yield syncedLyrics;
 });
+
+/// Copy the Python script from the assets to a temporary directory
+/// 
+/// Required to execute the Python script to fetch the synchronized lyrics
+/// 
+/// Returns:
+/// - The path to the Python script as a [String]
+Future<String> _copyPythonScriptToLocalPath() async {
+  // Get the temporary directory to store the Python script
+  final tempDirectory = await getTemporaryDirectory();
+  final path = "${tempDirectory.path}/musixmatch.py";
+
+  // Copy the Python script to the temporary directory
+  final byteData = await rootBundle.load('assets/resources/musixmatch.py');
+  final file = File(path);
+  await file.writeAsBytes(byteData.buffer.asUint8List());
+
+  return path;
+}
