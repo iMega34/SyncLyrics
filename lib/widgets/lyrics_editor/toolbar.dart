@@ -212,24 +212,26 @@ class _ToolbarState extends ConsumerState<Toolbar> {
   @override
   Widget build(BuildContext context) {
     final areLyricsAvailable = ref.watch(workspaceProvider).parsedLyrics.isNotEmpty;
-    return Neumorphic(
-      child: GridView(
-        padding: const EdgeInsets.all(10),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          childAspectRatio: 2 / 1,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          crossAxisCount: 2
+    return Expanded(
+      child: Neumorphic(
+        child: GridView(
+          padding: const EdgeInsets.all(10),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            childAspectRatio: 2 / 1,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            crossAxisCount: 2
+          ),
+          children: _buttons.map((_ToolbarButton button) => Tooltip(
+            message: button.tooltip,
+            child: NeumorphicButton(
+              enabled: areLyricsAvailable,
+              onPressed: button.action,
+              label: button.label,
+            )
+          )).toList()
         ),
-        children: _buttons.map((_ToolbarButton button) => Tooltip(
-          message: button.tooltip,
-          child: NeumorphicButton(
-            enabled: areLyricsAvailable,
-            onPressed: button.action,
-            label: button.label,
-          )
-        )).toList()
-      )
+      ),
     );
   }
 }
