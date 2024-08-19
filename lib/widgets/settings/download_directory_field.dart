@@ -1,11 +1,11 @@
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:sync_lyrics/providers/settings_provider.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+
 import 'package:sync_lyrics/utils/neumorphic/neumorphic.dart';
 import 'package:sync_lyrics/utils/neumorphic/neumorphic_button.dart';
+import 'package:sync_lyrics/providers/settings_provider.dart';
 
 class DownloadDirectoryField extends ConsumerStatefulWidget {
   /// Represents a field to input the download directory
