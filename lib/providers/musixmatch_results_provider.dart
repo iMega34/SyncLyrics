@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:sync_lyrics/utils/musixmatch_api_key.dart';
+import 'package:sync_lyrics/providers/settings_provider.dart';
 
 /// Musixmatch result type
 typedef MusixmatchResult = Map<String, String>;
@@ -16,7 +16,7 @@ class MusixmatchResultsState {
   /// - [track] is the track name to search for
   /// - [artist] is the artist name to search for
   /// - [results] is the list of results from the search
-  MusixmatchResultsState({this.track, this.artist, this.results});
+  const MusixmatchResultsState({this.track, this.artist, this.results});
 
   // Class attributes
   final String? track;
@@ -46,7 +46,9 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// Musixmatch client to search for tracks using the Musixmatch public API
   /// 
   /// The initial state is an empty state, with no  results
-  MusixmatchResultsNotifier() : super(MusixmatchResultsState());
+  MusixmatchResultsNotifier(this.ref) : super(const MusixmatchResultsState());
+
+  final Ref ref;
 
   /// Sets the track name to search for
   /// 
@@ -72,6 +74,7 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
   /// - `0` if the search was successful. The results are stored in the state
   /// - `-1` if the track or artist are null. No artist or track to search for
   /// - `-2` if no results were found. The search was unsuccessful
+  /// - `-3` if API key isn't valid or wasn't provided. The search was unsuccessful
   Future<int> searchTracks() async {
     final track = state.track;
     final artist = state.artist;
@@ -81,8 +84,17 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
       return -1;
     }
 
+    // Get the Musixmatch API key from the settings provider, if it's not provided
+    // return an error code
+    final musixmatchApiKey = ref.read(settingsProvider).musixmatchApiKey;
+    if (musixmatchApiKey == null) {
+      return -3;
+    }
+
     // Uses the 'track.search' endpoint from the Musixmatch API to search for tracks
-    final String matchTrackURL = Uri.encodeFull("https://api.musixmatch.com/ws/1.1/track.search?apikey=$musixmatchApiKey&q_track=$track&q_artist=$artist");
+    final String matchTrackURL = Uri.encodeFull(
+      "https://api.musixmatch.com/ws/1.1/track.search?apikey=$musixmatchApiKey&q_track=$track&q_artist=$artist"
+    );
 
     // Fetch the data from the API and decode it as Map<String, dynamic>
     final response = await http.get(Uri.parse(matchTrackURL));
@@ -141,5 +153,5 @@ class MusixmatchResultsNotifier extends StateNotifier<MusixmatchResultsState> {
 /// 
 /// The initial state is an empty state, with no results
 final musixmatchResultsProvider = StateNotifierProvider<MusixmatchResultsNotifier, MusixmatchResultsState>(
-  (ref) => MusixmatchResultsNotifier()
+  (ref) => MusixmatchResultsNotifier(ref)
 );

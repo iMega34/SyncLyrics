@@ -61,6 +61,14 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
           message: "Couldn't find any results for the provided artist and track.\nTry changing the search terms"
         );
         break;
+      case -3:
+        showCustomSnackBar(
+          context,
+          type: SnackBarType.error,
+          title: "API key error",
+          message: "The Musixmatch API key is not valid or wasn't provided"
+        );
+        break;
     }
   }
   
