@@ -1,11 +1,11 @@
 
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sync_lyrics/providers/settings_provider.dart';
 
 class SyncedLyricsState {
   /// State for the synchronized lyrics provider
@@ -52,7 +52,9 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// editing and downloading the synchronized lyrics as LRC files
   ///
   /// The initial state is an empty state, with no synchronized lyrics
-  SyncedLyricsNotifier() : super(const SyncedLyricsState());
+  SyncedLyricsNotifier(this.ref) : super(const SyncedLyricsState());
+
+  final Ref ref;
 
   /// Get the track information from the state
   /// 
@@ -134,25 +136,17 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
     state = state.copyWith(track: track, artist: artist, rawSyncedLyrics: lyrics, parsedLyrics: parsedLyrics);
   }
 
-  // TODO: Implement custom default download directory in the app settings
   /// Download the synchronized lyrics as a file
   ///
-  /// The file is saved by default in the `Downloads` directory of the device,
-  /// however, the user can select the directory where the file will be saved.
+  /// The file is saved to the directory specified in the `settingsProvider`, which can be
+  /// changed by the user in the settings screen.
   /// 
   /// Parameters:
   /// - [asTxtFile] is a flag to save the LRC file as a `.txt` file instead of a `.lrc` file
   ///
-  /// The file is named as `artist - track.lrc`.
+  /// The file is named as `artist - track.lrc` or `artist - track.txt` based on the `asTxtFile` flag.
   void downloadFile({bool asTxtFile = false}) async {
-    final initDirectory = (await getDownloadsDirectory())!.path;
-    // Get the directory where the user wants to save the LRC file, showing a dialog
-    // opened in the default directory
-    final downloadDirectory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: "Select the directory to save synchronized lyrics",
-      initialDirectory: initDirectory,
-      lockParentWindow: true
-    );
+    final downloadDirectory = ref.read(settingsProvider).downloadDirectory;
 
     // Assign the extension of the file based on the 'asTxtFile' flag
     final extension = asTxtFile ? "txt" : "lrc";
@@ -170,7 +164,7 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
 ///
 /// The initial state is an empty state, with no synchronized lyrics
 final syncedLyricsProvider = StateNotifierProvider<SyncedLyricsNotifier, SyncedLyricsState>(
-  (ref) => SyncedLyricsNotifier(),
+  (ref) => SyncedLyricsNotifier(ref),
 );
 
 /// Musixmatch synced lyrics stream provider
