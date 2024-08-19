@@ -12,9 +12,9 @@ class LyricsFinderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      child: const Column(
+    return const Padding(
+      padding: EdgeInsets.all(15),
+      child: Column(
         children: [
           SearchFields(),
           ResultsList()
