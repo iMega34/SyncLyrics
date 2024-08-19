@@ -120,7 +120,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   /// - A [Map] with the settings found in the local settings database
   Future<Map<String, dynamic>> _fetchSettings() async {
     // Get the path to the local settings database
-    final path = '${await getDatabasesPath()}\\settings.db';
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final path = '${documentsDirectory.path}/settings.db';
     const sql = '''
       CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY,
@@ -139,7 +140,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         await db.insert('settings', {
           'id': 1,
           'musixmatchApiKey': null,
-          'downloadDirectory': downloadsDirectory,
+          'downloadDirectory': downloadsDirectory!.path,
           'theme': ThemeMode.system.toString(),
         });
       },
@@ -159,7 +160,10 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   /// - [value] is the new value for the setting as a [String]
   Future<void> _handleUpdateTransaction(String config, String? value) async {
     // Get the path to the local settings database
-    final path = '${await getDatabasesPath()}\\settings.db';
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final path = '${documentsDirectory.path}/settings.db';
+
+    // Open the database and update the setting
     final database = await openDatabase(path);
 
     // Update the setting in the database, closing the connection afterwards
