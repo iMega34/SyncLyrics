@@ -50,13 +50,12 @@ class _ApiKeyFieldState extends ConsumerState<ApiKeyField> {
         ),
         NeumorphicButton(
           label: "Save API key",
-          margin: const EdgeInsets.only(left: 15),
+          margin: const EdgeInsets.symmetric(horizontal: 15),
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
           onPressed: () => ref.read(settingsProvider.notifier).saveMusixmatchApiKey(controller.text)
         ),
         NeumorphicButton(
           label: "Clear API key",
-          margin: const EdgeInsets.only(left: 15),
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
           onPressed: () {
             ref.read(settingsProvider.notifier).clearMusixmatchApiKey();
