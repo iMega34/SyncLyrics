@@ -98,6 +98,13 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(downloadDirectory: downloadDirectory);
   }
 
+  /// Reset the download directory to the default downloads directory
+  Future<void> resetDownloadDirectory() async {
+    final downloadsDirectory = (await getDownloadsDirectory())!.path;
+    await _handleUpdateTransaction('downloadDirectory', downloadsDirectory);
+    state = state.copyWith(downloadDirectory: downloadsDirectory);
+  }
+
   /// Set the theme mode of the app
   /// 
   /// Parameters:
