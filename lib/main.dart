@@ -13,36 +13,34 @@ void main() {
   runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends ConsumerStatefulWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  ConsumerState<MainApp> createState() => _MainAppState();
-}
-
-class _MainAppState extends ConsumerState<MainApp> {
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeSettings();
-  }
-
-  /// Initialize the settings provider with the local settings database
-  void _initializeSettings() async {
-    await ref.read(settingsProvider.notifier).initializeSettings();
-    setState(() => _isInitialized = true);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_isInitialized) return const CircularProgressIndicator();
-    return MaterialApp.router(
-      theme: AppTheme.lightTheme(context),
-      darkTheme: AppTheme.darkTheme(context),
-      themeMode: /* isDarkMode ? ThemeMode.dark : ThemeMode.light */ ThemeMode.light,
-      routerConfig: AppRouter.appRouter,
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder(
+      future: ref.read(settingsProvider.notifier).initializeSettings(),
+      builder: (context, snapshot) {
+        // Show loading spinner while waiting for settings to be loaded
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        // Show error message if settings failed to load
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
+        // Show the app once settings are loaded successfully
+        return MaterialApp.router(
+          theme: AppTheme.lightTheme(context),
+          darkTheme: AppTheme.darkTheme(context),
+          themeMode: ThemeMode.light,
+          routerConfig: AppRouter.appRouter,
+        );
+      },
     );
   }
 }
