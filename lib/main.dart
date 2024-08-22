@@ -18,29 +18,12 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder(
-      future: ref.read(settingsProvider.notifier).initializeSettings(),
-      builder: (context, snapshot) {
-        // Show loading spinner while waiting for settings to be loaded
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        // Show error message if settings failed to load
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Error: ${snapshot.error}')),
-          );
-        }
-        // Show the app once settings are loaded successfully
-        return MaterialApp.router(
-          theme: AppTheme.lightTheme(context),
-          darkTheme: AppTheme.darkTheme(context),
-          themeMode: ThemeMode.light,
-          routerConfig: AppRouter.appRouter,
-        );
-      },
+    ref.read(settingsProvider.notifier).initializeSettings();
+    return MaterialApp.router(
+      theme: AppTheme.lightTheme(context),
+      darkTheme: AppTheme.darkTheme(context),
+      themeMode: ThemeMode.light,
+      routerConfig: AppRouter.appRouter,
     );
   }
 }
