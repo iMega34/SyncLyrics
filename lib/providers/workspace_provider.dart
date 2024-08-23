@@ -1,7 +1,10 @@
 
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sync_lyrics/extensions.dart';
+import 'package:sync_lyrics/providers/musixmatch_synced_lyrics_provider.dart';
 
 class WorkspaceState {
   /// State for the workspace provider
@@ -87,7 +90,9 @@ class WorkspaceState {
 }
 
 class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
-  WorkspaceNotifier() : super(const WorkspaceState());
+  WorkspaceNotifier(this.ref) : super(const WorkspaceState());
+
+  final Ref ref;
 
   /// Private local map for storing the pending changes to the parsed lyrics.
   final Map<int, Map<String, String>> _pendingChanges = {};
@@ -155,6 +160,35 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
   ///   of [Map]s with its timestamp and lyrics as [String]s.
   void initializeSyncedLyrics(String track, String artist, List<Map<String, String>> parsedLyrics)
     => state = state.copyWith(track: track, artist: artist, parsedLyrics: parsedLyrics);
+
+  /// Load the synchronized lyrics from a file
+  /// 
+  /// This function is used to load the synchronized lyrics from a file. The content of the file must
+  /// meet the following requirements:
+  /// - The file should be either a `.txt` or a `.lrc` file
+  /// - The synchronized lyrics should be in the format of `[mm:ss.xx] lyrics`, where the timestamp
+  ///   is enclosed in square brackets, since is the expected format for a `.lrc` file
+  Future<int> loadFromFile(File file, String track, String artist) async {
+    // Extract the content of the file
+    final bytes = await file.readAsBytes();
+    final lyrics = String.fromCharCodes(bytes);
+
+    // Try loading the synchronized lyrics to the workspace
+    final statusCode = ref.read(syncedLyricsProvider.notifier).loadSyncedLyrics(track, artist, lyrics);
+
+    // If the loading was unsuccessful, return -1
+    if (statusCode == -1) {
+      return -1;
+    }
+
+    // Clear the workspace, discard any registered changes, and initialize the synced lyrics
+    // in the workspace
+    final parsedLyrics = ref.read(syncedLyricsProvider).parsedLyrics!;
+    ref.read(workspaceProvider.notifier).discardChanges();
+    ref.read(workspaceProvider.notifier).clearWorkspace();
+    ref.read(workspaceProvider.notifier).initializeSyncedLyrics(track, artist, parsedLyrics);
+    return 0;
+  }
 
   /// Clear the workspace
   /// 
@@ -298,6 +332,12 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
     // Update the state with the new parsed lyrics
     state = state.copyWith(parsedLyrics: parsedLyrics);
   }
+
+  /// Discard all the changes registered in the workspace
+  /// 
+  /// Ensures no changes are applied to the parsed lyrics, effectively reverting the workspace
+  /// to the last saved state.
+  void discardChanges() => _pendingChanges.clear();
 
   /// Register a change to a line in the workspace
   /// 
@@ -833,5 +873,5 @@ class WorkspaceNotifier extends StateNotifier<WorkspaceState> {
 }
 
 final workspaceProvider = StateNotifierProvider<WorkspaceNotifier, WorkspaceState>(
-  (ref) => WorkspaceNotifier()
+  (ref) => WorkspaceNotifier(ref)
 );

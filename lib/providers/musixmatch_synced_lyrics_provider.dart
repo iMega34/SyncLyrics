@@ -76,6 +76,10 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   /// - [track] is the name of the track
   /// - [artist] is the artist of the track
   /// - [lyrics] is the synchronized lyrics of the track as a [String]
+  /// 
+  /// Returns:
+  /// - `0` if the synced lyrics were successfully loaded. No errors occurred.
+  /// - `-1` if the synced lyrics could not be loaded. An error occurred.
   ///
   /// Detailed example:
   ///
@@ -121,20 +125,53 @@ class SyncedLyricsNotifier extends StateNotifier<SyncedLyricsState> {
   ///
   /// Track used for testing: "Lie to Me" by Depeche Mode
   /// Used Musixmatch track ID: 283511245
-  void loadSyncedLyrics(String track, String artist, String lyrics) {
+  int loadSyncedLyrics(String track, String artist, String lyrics) {
     // Remove the last two lines to avoid parsing errors
     final lines = List<String>.from(lyrics.split("\n"))
-      ..removeLast()..removeLast();
+      ..removeWhere((String line) => line.isEmpty);
+
+    // Remove the last line if it is empty
+    final lastLineContent = lines.last.substring(10).trim();
+    if (lastLineContent.isEmpty) lines.removeLast();
+
+    // Validate the synchronized lyrics format
+    if (!validateLyricsFormat(lines)) {
+      return -1;
+    }
+
     // Maps the lines to a list of maps, removing the square brackets from the timestamp
     // and storing the timestamp and lyrics as strings
     final parsedLyrics = List<Map<String, String>>.from(
-      lines.map((String line) => {line.substring(1, 9) : line.substring(11)})
+      lines.map((String line) => {line.substring(1, 9) : line.substring(10).trim()})
     );
 
     // Store the synchronized lyrics as both a [String] and a [List] of [Map]s, including
     // the track and artist in the state
     state = state.copyWith(track: track, artist: artist, rawSyncedLyrics: lyrics, parsedLyrics: parsedLyrics);
+    return 0;
   }
+
+  /// Validates the synced lyrics to be loaded meet the correct format for LRC files
+  /// 
+  /// Parameters:
+  /// - [lines] is a [List] of [String]s with the synchronized lyrics
+  /// 
+  /// Returns:
+  /// - `true` if the synchronized lyrics meet the correct format for LRC files
+  /// - `false` if the synchronized lyrics do not meet the correct format for LRC files
+  bool validateLyricsFormat(List<String> lines) {
+    final regex = RegExp(r'^\[\d{2}:\d{2}\.\d{2}\](\s*.*)?$');
+
+    for (final line in lines) {
+      // Return false if the line does not match the regex
+      if (!regex.hasMatch(line.trim())) {
+        return false;
+      }
+    }
+
+    // Otherwise, return true
+    return true;
+  } 
 
   /// Download the synchronized lyrics as a file
   ///
