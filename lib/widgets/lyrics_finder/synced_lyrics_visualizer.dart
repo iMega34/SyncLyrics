@@ -32,6 +32,7 @@ class _SyncedLyricsVisualizerState extends ConsumerState<SyncedLyricsVisualizer>
   /// Initializes the `workspaceProvider` with the data stored in the `syncedLyricsProvider`,
   /// then navigates to the `LyricsEditorScreen` and closes the [SyncedLyricsVisualizer] screen
   void _loadSyncedLyricsToWorkspace() {
+    ref.read(workspaceProvider.notifier).discardChanges();
     ref.read(workspaceProvider.notifier).clearWorkspace();
     final (:track!, :artist!, :parsedLyrics!) = ref.read(syncedLyricsProvider.notifier).trackInfo;
     ref.read(workspaceProvider.notifier).initializeSyncedLyrics(track, artist, parsedLyrics);
