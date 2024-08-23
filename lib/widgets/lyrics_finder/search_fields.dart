@@ -71,10 +71,9 @@ class _SearchFieldsState extends ConsumerState<SearchFields> {
         break;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    // TODO: Implementar extracción de metadatos como método de búsqueda
     final notifier = ref.read(musixmatchResultsProvider.notifier);
     return Row(
       children: [
