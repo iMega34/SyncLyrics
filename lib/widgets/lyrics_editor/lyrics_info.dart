@@ -41,7 +41,6 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final lyricsInfo = ref.read(workspaceProvider);
     final notifier = ref.read(workspaceProvider.notifier);
     final trackStyle = textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold);
     final artistStyle = textTheme.bodyLarge;
@@ -51,10 +50,21 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
       isDense: true
     );
 
+    /// Listen to the workspace provider to update the track and artist information
+    /// when the state changes
+    ref.listen(workspaceProvider, (previous, next) {
+      if (previous?.track != next.track) {
+        _trackController.text = next.track ?? "Track";
+      }
+      if (previous?.artist != next.artist) {
+        _artistController.text = next.artist ?? "Artist";
+      }
+    });
+
     return Column(
       children: [
         // Display the track and artist of the synced lyrics, if available
-        lyricsInfo.track == null
+        ref.watch(workspaceProvider).track == null
           ? Text("No track", style: trackStyle)
           : TextField(
               controller: _trackController, 
@@ -63,7 +73,7 @@ class _LyricsInfoState extends ConsumerState<LyricsInfo> {
               decoration: decoration,
               onChanged: (String text) => notifier.setTrack(text),
             ),
-        lyricsInfo.artist == null
+        ref.watch(workspaceProvider).artist == null
           ? Text("No artist", style: artistStyle)
           : TextField(
               controller: _artistController,
